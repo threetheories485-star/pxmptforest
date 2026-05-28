@@ -7,12 +7,13 @@
 // --- FIREBASE CLOUD CONFIGURATION ---
 // Paste your live credentials here when you are ready to switch from local to cloud.
 const FirebaseEnvironment = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyCDnJh7GpOQnwccFWGEcwoQ71l8pVIZBQI",
+    authDomain: "prompt-7914d.firebaseapp.com",
+    projectId: "prompt-7914d",
+    storageBucket: "prompt-7914d.firebasestorage.app",
+    messagingSenderId: "848428533255",
+    appId: "1:848428533255:web:b42f1a0c0e1278c1ae8ca2"
+
 };
 
 const AppEngine = {
