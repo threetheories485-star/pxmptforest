@@ -1,0 +1,411 @@
+/* --- PXMPT FOREST — HIGH ACCURACY DESIGN COMPONENT LABELS --- */
+
+/* THE MASTER LIQUID-BRUTAL MASTERCARD ACTION ELEMENTS */
+.liquid-brutal-master-btn {
+    background: #ffffff;
+    border: 3px solid var(--brutal-black-line);
+    padding: 12px 22px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 16px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px var(--brutal-black-line);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    will-change: transform, box-shadow;
+    transition: var(--ios-fluid-spring);
+}
+.liquid-brutal-master-btn:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 7px 7px 0px var(--brutal-black-line);
+}
+.liquid-brutal-master-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px var(--brutal-black-line);
+}
+
+/* THE PREMIUM LIQUID GEL MOLDED SEARCH BAR CONTAINER */
+.liquid-gel-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--liquid-glass-body);
+    backdrop-filter: blur(25px) saturate(170%);
+    -webkit-backdrop-filter: blur(25px) saturate(170%);
+    border: 3px solid var(--brutal-black-line);
+    border-radius: 22px;
+    padding: 4px 8px 4px 54px;
+    box-shadow: 0px 8px 32px rgba(124, 77, 255, 0.04), 4px 4px 0px rgba(0, 0, 0, 0.05);
+    transition: var(--ios-fluid-spring);
+}
+.liquid-gel-search-wrapper:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0px 12px 32px rgba(124, 77, 255, 0.08), 5px 5px 0px var(--neon-yellow-shadow);
+}
+.lens-svg {
+    position: absolute;
+    left: 20px;
+    color: var(--brutal-black-line);
+    stroke-width: 2.5px;
+}
+.liquid-gel-search-wrapper input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 14px 0;
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 600;
+    outline: none;
+    color: var(--text-charcoal-primary);
+}
+.search-tuning-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    color: var(--brutal-black-line);
+    transition: var(--ios-fluid-spring);
+}
+.search-tuning-btn:hover {
+    transform: rotate(90deg);
+}
+
+/* TOP DRAWER MANAGE UTILITY TOGGLES */
+.manage-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--premium-purple-accent);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    transition: var(--ios-fluid-spring);
+}
+.manage-action-btn:hover {
+    transform: scale(1.05);
+}
+
+/* HORIZONTAL SCROLLER SLIDERS CAROUSELS */
+.categories-carousel-track {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    padding: 4px 4px 16px 4px;
+    scrollbar-width: none;
+}
+.categories-carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+.category-selection-gel-pill {
+    flex-shrink: 0;
+    background: #ffffff;
+    border: 3px solid var(--brutal-black-line);
+    border-radius: 18px;
+    padding: 12px 24px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px var(--brutal-black-line);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 110px;
+    transition: var(--ios-fluid-spring);
+}
+.category-selection-gel-pill .pill-quantity-string {
+    font-family: var(--font-body);
+    font-size: 12px;
+    opacity: 0.6;
+    margin-top: 2px;
+}
+.category-selection-gel-pill:hover {
+    transform: translateY(-3px);
+    box-shadow: 5px 5px 0px var(--neon-yellow-shadow);
+}
+.category-selection-gel-pill.active {
+    background: var(--liquid-glass-card-active) !important;
+    color: #ffffff !important;
+    box-shadow: 4px 4px 0px var(--brutal-black-line);
+    transform: translateY(-2px);
+}
+.category-selection-gel-pill.active .pill-quantity-string {
+    color: #ffffff;
+    opacity: 0.85;
+}
+
+/* ============================================================== */
+/* PIXEL-PERFECT HYBRID BRUTAL CARDS (UPDATED HEADER STYLE)       */
+/* ============================================================== */
+.gel-molded-prompt-card {
+    background: #ffffff;
+    border: 3px solid var(--brutal-black-line);
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    min-height: 230px;
+    box-shadow: 5px 5px 0px var(--brutal-black-line);
+    transition: var(--ios-fluid-spring);
+    overflow: hidden; /* Ensures the header background clips to rounded corners */
+}
+.gel-molded-prompt-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 6px 6px 0px var(--neon-yellow-shadow), 0px 12px 32px rgba(0,0,0,0.04);
+}
+
+/* Card Colored Header */
+.card-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 3px solid var(--brutal-black-line);
+}
+.card-header-left-cluster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.card-custom-icon-box {
+    background: #ffffff;
+    border: 2.5px solid var(--brutal-black-line);
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 2px 2px 0px var(--brutal-black-line);
+}
+.card-header-title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-charcoal-primary);
+}
+
+/* Header Circle Actions (Pencil & Trash) */
+.card-action-utilities-mesh {
+    display: flex;
+    gap: 10px;
+}
+.card-micro-action-btn {
+    background: #ffffff;
+    border: 2.5px solid var(--brutal-black-line);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 1.5px 1.5px 0px var(--brutal-black-line);
+    color: var(--brutal-black-line);
+    transition: var(--ios-fluid-spring);
+}
+.card-micro-action-btn:hover {
+    background: var(--brutal-black-line);
+    color: #ffffff;
+    transform: scale(1.12) rotate(-6deg);
+}
+
+/* Card Body Text */
+.card-textual-body {
+    flex-grow: 1;
+    padding: 20px 16px;
+}
+.card-textual-body p {
+    font-size: 14px;
+    color: #404044;
+    line-height: 1.55;
+    display: -webkit-box;
+    line-clamp: 4;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Card Footer */
+.card-lower-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-top: 2px dashed rgba(0, 0, 0, 0.08);
+    background: var(--liquid-glass-body);
+}
+.card-category-tag-pill {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 12px;
+    border: 2.5px solid var(--brutal-black-line);
+    background: #ffffff;
+}
+.card-footer-tray-actions {
+    display: flex;
+    gap: 16px;
+}
+.tray-action-btn-node {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--brutal-black-line);
+    display: flex;
+    transition: var(--ios-fluid-spring);
+}
+.tray-action-btn-node:hover {
+    transform: scale(1.25) translateY(-2px);
+    color: var(--premium-purple-accent);
+}
+
+/* ============================================================== */
+/* NAVIGATION & OVERLAYS (Dock, Modals, Toasts)                   */
+/* ============================================================== */
+
+/* Floating Dock */
+.liquid-glass-floating-dock {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 440px;
+    height: 78px;
+    z-index: 100;
+    border: 3px solid var(--brutal-black-line);
+    border-radius: 28px;
+    box-shadow: 0px 16px 40px rgba(110, 60, 240, 0.12), 6px 6px 0px var(--brutal-black-line);
+    overflow: hidden;
+    display: flex;
+}
+.liquid-blur-shield {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: var(--liquid-dock-body);
+    backdrop-filter: blur(35px) brightness(1.05) saturate(210%);
+    -webkit-backdrop-filter: blur(35px) brightness(1.05) saturate(210%);
+    box-shadow: inset 0px 1.5px 3px rgba(255, 255, 255, 0.45);
+    z-index: 1;
+}
+.dock-action-mesh {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 12px;
+    z-index: 2;
+}
+.dock-link-item {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--ios-fluid-spring);
+}
+.dock-link-item i { width: 24px; height: 24px; stroke-width: 2.2px; }
+.dock-link-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1) translateY(-2px);
+}
+.dock-link-item.active {
+    background: var(--neon-yellow-shadow);
+    color: var(--brutal-black-line);
+    border: 2.5px solid var(--brutal-black-line);
+    box-shadow: 2px 2px 0px var(--brutal-black-line);
+}
+.dock-link-item.dynamic-plus-glow-btn {
+    background: var(--neon-yellow-shadow);
+    color: var(--brutal-black-line);
+    border: 3px solid var(--brutal-black-line);
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    box-shadow: 2.5px 2.5px 0px var(--brutal-black-line);
+    transform: translateY(-4px);
+}
+.dock-link-item.dynamic-plus-glow-btn:hover {
+    background: #ffffff;
+    transform: translateY(-6px) scale(1.15) rotate(90deg);
+    box-shadow: 4px 4px 0px var(--brutal-black-line);
+}
+
+/* Modals */
+.system-modal-backdrop-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px; opacity: 0; pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.system-modal-backdrop-overlay.open { opacity: 1; pointer-events: auto; }
+.liquid-gel-modal-box {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(35px) saturate(200%);
+    -webkit-backdrop-filter: blur(35px) saturate(200%);
+    border: 3.5px solid var(--brutal-black-line);
+    border-radius: 36px;
+    box-shadow: 8px 8px 0px var(--brutal-black-line);
+    width: 100%; max-width: 470px; padding: 26px;
+    transform: scale(0.88) translateY(40px);
+    transition: var(--ios-fluid-spring);
+}
+.system-modal-backdrop-overlay.open .liquid-gel-modal-box { transform: scale(1) translateY(0); }
+
+.modal-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.modal-box-header h2 { font-family: var(--font-heading); font-size: 24px; font-weight: 800; }
+.modal-close-icon-btn { background: transparent; border: none; cursor: pointer; color: var(--brutal-black-line); }
+
+.modal-form-group { display: flex; flex-direction: column; margin-bottom: 18px; }
+.modal-form-group label { font-family: var(--font-heading); font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.modal-form-group input, .modal-form-group textarea, .modal-form-group select {
+    background: #ffffff; border: 2.5px solid var(--brutal-black-line); padding: 14px; border-radius: 14px;
+    font-family: var(--font-body); font-size: 15px; font-weight: 600; outline: none; transition: var(--ios-fluid-spring);
+}
+.modal-form-group input:focus, .modal-form-group textarea:focus, .modal-form-group select:focus {
+    box-shadow: 4px 4px 0px var(--premium-purple-accent); transform: translate(-1px, -1px);
+}
+.modal-form-row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.submit-action-btn { width: 100%; justify-content: center; background: var(--mint-green-accent); padding: 16px; margin-top: 8px; }
+
+/* Toasts */
+.toast-notification-center-hub {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 1200;
+    display: flex; flex-direction: column; gap: 10px; width: calc(100% - 40px); max-width: 360px;
+}
+.toast-bar {
+    background: #ffffff; border: 2.5px solid var(--brutal-black-line); padding: 14px 20px; border-radius: 16px;
+    box-shadow: 4px 4px 0px var(--brutal-black-line); font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 12px;
+    animation: toastSpringIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes toastSpringIn { from { transform: translateY(-40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Accounts */
+.user-profile-identity-capsule {
+    display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 6px 16px 6px 6px;
+    border: 2.5px solid var(--brutal-black-line); border-radius: 40px; box-shadow: 3px 3px 0px var(--brutal-black-line);
+    cursor: pointer; transition: var(--ios-fluid-spring);
+}
+.user-profile-identity-capsule:hover { transform: translateY(-2px); box-shadow: 4px 4px 0px var(--neon-yellow-shadow); }
+.user-avatar-image-node { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--brutal-black-line); object-fit: cover; }
+.user-label-strings h5 { font-size: 13px; font-weight: 800; }
+.user-label-strings p { font-size: 11px; opacity: 0.6; }

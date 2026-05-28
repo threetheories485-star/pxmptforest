@@ -1,0 +1,180 @@
+/* --- PXMPT FOREST — WORKSPACE GRID RESPONSIVE ARCHITECTURE --- */
+
+/* MASTER SCREEN ROOT CONTROLLER */
+.forest-app-shell {
+    display: flex;
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* CONTAINER CONTENT HOUSING STREAM */
+.content-stream-viewport {
+    flex: 1;
+    width: 100%;
+    padding: 24px 16px 130px 16px; /* Deep safety padding for floating iOS navigation dock */
+}
+
+/* PC DOCK PANEL LAYOUT */
+.desktop-sidebar-pane {
+    width: 290px;
+    background: var(--liquid-glass-body);
+    backdrop-filter: blur(30px) saturate(190%);
+    -webkit-backdrop-filter: blur(30px) saturate(190%);
+    border-right: 3px solid var(--brutal-black-line);
+    box-shadow: 4px 0px 24px rgba(0, 0, 0, 0.02);
+    display: none; /* Default hidden to support native mobile design rules */
+    flex-direction: column;
+    padding: 36px 24px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 95;
+}
+
+.sidebar-brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 44px;
+}
+
+.brand-liquid-icon {
+    background: var(--premium-purple-accent);
+    color: #ffffff;
+    padding: 10px;
+    border: 2.5px solid var(--brutal-black-line);
+    border-radius: 14px;
+    box-shadow: 2px 2px 0px var(--brutal-black-line);
+}
+
+.sidebar-brand-wrapper h2 {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.sidebar-menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-grow: 1;
+}
+
+.sidebar-btn {
+    background: transparent;
+    border: 2px solid transparent;
+    padding: 14px 18px;
+    border-radius: 18px;
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-charcoal-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    transition: var(--ios-fluid-spring);
+}
+
+.sidebar-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: translateX(4px);
+}
+
+.sidebar-btn.active {
+    background: #ffffff;
+    border-color: var(--brutal-black-line);
+    box-shadow: 4px 4px 0px var(--neon-yellow-shadow);
+    transform: translate(-2px, -2px);
+}
+
+.sidebar-user-dock {
+    padding-top: 22px;
+    border-top: 2px dashed rgba(0, 0, 0, 0.08);
+}
+
+/* MAIN MOBILE APP TOP BAR SYSTEM */
+.vault-main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.app-logo-text {
+    font-family: var(--font-heading);
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: -1.2px;
+    line-height: 1.05;
+}
+
+.app-tagline-text {
+    font-size: 14px;
+    color: #555555;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+/* SECTION ARCHITECTURE STRUCTURE SECTIONS */
+.search-panel-shelf,
+.categories-panel-shelf {
+    margin-bottom: 26px;
+}
+
+.panel-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.panel-title-row h3 {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-charcoal-primary);
+}
+
+/* RESPONSIVE FLUID MEDIA MATRIX GRID CONTEXTS */
+.liquid-cards-responsive-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Single card profile stack on base resolutions */
+    gap: 22px;
+}
+
+/* --- 💻 ADVANCED DEVICE BREAKPOINT VIEWPORT RESOLVERS --- */
+@media (min-width: 580px) {
+    .liquid-cards-responsive-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 980px) {
+    .desktop-sidebar-pane {
+        display: flex; /* Sidebar drops cleanly into viewport layout stream */
+    }
+    .liquid-glass-floating-dock {
+        display: none; /* Mobile navigation bar cleanly auto-collapses on PC panels */
+    }
+    .content-stream-viewport {
+        padding: 44px 54px;
+    }
+    .liquid-cards-responsive-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .app-logo-text {
+        font-size: 44px;
+    }
+}
+
+@media (min-width: 1350px) {
+    .liquid-cards-responsive-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

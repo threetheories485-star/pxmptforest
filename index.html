@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pxmpt Forest — Premium Liquid Glass Vault</title>
+    
+    <link rel="stylesheet" href="style-var.css">
+    <link rel="stylesheet" href="style-layout.css">
+    <link rel="stylesheet" href="styles-components.css">
+    <link rel="stylesheet" href="style-tree.css">
+    <link rel="stylesheet" href="styles-auth.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <div class="blueprint-grid-canvas"></div>
+    <div class="fluid-ambient-glow ambient-blob-purple"></div>
+    <div class="fluid-ambient-glow ambient-blob-lavender"></div>
+
+    <div class="forest-app-shell">
+        
+        <aside class="desktop-sidebar-pane" id="desktopSidebar">
+            <div class="sidebar-brand-wrapper">
+                <div class="brand-liquid-icon">
+                    <i data-lucide="layout-grid"></i>
+                </div>
+                <h2>Pxmpt Forest</h2>
+            </div>
+            
+            <nav class="sidebar-menu-links">
+                <button class="sidebar-btn active" id="pcMenuHome"><i data-lucide="home"></i> Home Vault</button>
+                <button class="sidebar-btn" id="pcMenuFavs"><i data-lucide="heart"></i> Liked Prompts</button>
+                <button class="sidebar-btn" id="pcMenuFolders"><i data-lucide="git-merge"></i> Forest Root Map</button>
+                <button class="sidebar-btn" id="pcMenuSettings"><i data-lucide="settings"></i> System Settings</button>
+            </nav>
+            
+            <div class="sidebar-user-dock" id="desktopAuthSlot"></div>
+        </aside>
+
+        <main class="content-stream-viewport">
+            
+            <header class="vault-main-header" id="mainAppHeader">
+                <div class="header-branding-text">
+                    <h1 class="app-logo-text">Pxmpt Forest</h1>
+                    <p class="app-tagline-text">Save, organize and reuse your best prompts.</p>
+                </div>
+                <div class="mobile-profile-container" id="mobileAuthSlot"></div>
+            </header>
+
+            <div id="homeViewPort" class="viewport-layer active-viewport">
+                <section class="search-panel-shelf">
+                    <div class="liquid-gel-search-wrapper">
+                        <i data-lucide="search" class="lens-svg"></i>
+                        <input type="text" id="promptSearchField" placeholder="Search prompts...">
+                        <button class="search-tuning-btn" title="Filter Configuration"><i data-lucide="sliders-horizontal"></i></button>
+                    </div>
+                </section>
+
+                <section class="categories-panel-shelf">
+                    <div class="panel-title-row">
+                        <h3>Categories</h3>
+                        <button class="manage-action-btn" id="openCategoryManagerBtn">Manage</button>
+                    </div>
+                    <div class="categories-carousel-track" id="categoryPillTrack"></div>
+                </section>
+
+                <section class="liquid-cards-responsive-grid" id="promptsGridContainer"></section>
+            </div>
+
+            <div id="foldersViewPort" class="viewport-layer hidden-viewport">
+                <section class="forest-map-header">
+                    <h3>System Architecture Tree</h3>
+                    <p style="font-size: 14px; opacity: 0.6; margin-top: 4px;">Explore your operational blueprints via root category branches.</p>
+                </section>
+                <section class="forest-tree-container" id="forestTreeMapSlot"></section>
+            </div>
+            
+        </main>
+    </div>
+
+    <nav class="liquid-glass-floating-dock" id="mobileNavDock">
+        <div class="liquid-blur-shield"></div>
+        <div class="dock-action-mesh">
+            <button class="dock-link-item active" id="dockHome" title="Home Feed"><i data-lucide="home"></i></button>
+            <button class="dock-link-item" id="dockFavs" title="Favorites"><i data-lucide="heart"></i></button>
+            <button class="dock-link-item dynamic-plus-glow-btn" id="dockAddPrompt" title="Add Prompt"><i data-lucide="plus"></i></button>
+            <button class="dock-link-item" id="dockFolders" title="Forest Map"><i data-lucide="git-merge"></i></button>
+            <button class="dock-link-item" id="dockSettings" title="App Settings"><i data-lucide="settings"></i></button>
+        </div>
+    </nav>
+
+    <div class="system-modal-backdrop-overlay" id="authModal">
+        <div class="liquid-gel-modal-box">
+            <div class="modal-box-header" style="margin-bottom: 16px;">
+                <h2>Account Access</h2>
+                <button class="modal-close-icon-btn" onclick="UIController.closeOpenModals()"><i data-lucide="x"></i></button>
+            </div>
+            
+            <p style="font-size: 14px; color: #444; margin-bottom: 24px;">Sign in or create an account to sync your vault.</p>
+
+            <div class="auth-toggle-pill">
+                <button class="auth-tab-btn active" id="tabLogin" onclick="AuthEngineUI.switchTab('login')">Log In</button>
+                <button class="auth-tab-btn" id="tabSignup" onclick="AuthEngineUI.switchTab('signup')">Sign Up</button>
+            </div>
+
+            <form id="authGatewayForm">
+                <div class="modal-form-group" id="nameInputGroup" style="display: none;">
+                    <label>Full Name</label>
+                    <input type="text" id="authName" placeholder="e.g., John Doe">
+                </div>
+                <div class="modal-form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="authEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="modal-form-group">
+                    <label>Password</label>
+                    <input type="password" id="authPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="liquid-brutal-master-btn submit-action-btn" id="authSubmitBtn" style="background: var(--neon-yellow-shadow);">Access Vault</button>
+            </form>
+
+            <div class="auth-divider"><span>OR</span></div>
+
+            <button class="liquid-brutal-master-btn google-auth-btn" onclick="GoogleAuthEngine.executeGoogleSignIn()">
+                <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Continue with Google
+            </button>
+        </div>
+    </div>
+    
+    <div class="system-modal-backdrop-overlay" id="promptFormModal">
+        <div class="liquid-gel-modal-box">
+            <div class="modal-box-header">
+                <h2 id="promptModalTitle">Create Prompt Blueprint</h2>
+                <button class="modal-close-icon-btn" onclick="UIController.closeOpenModals()"><i data-lucide="x"></i></button>
+            </div>
+            <form id="promptDataAssetForm">
+                <input type="hidden" id="formPromptId">
+                <div class="modal-form-group">
+                    <label>Prompt Card Title</label>
+                    <input type="text" id="formPromptTitle" placeholder="e.g., C++ Algorithm Optimizer" required>
+                </div>
+                <div class="modal-form-row-split">
+                    <div class="modal-form-group">
+                        <label>Custom Icon (Emoji)</label>
+                        <input type="text" id="formPromptIcon" placeholder="e.g., 🤖, 💻, ⚡" value="📝" required>
+                    </div>
+                    <div class="modal-form-group">
+                        <label>Category Node</label>
+                        <select id="formPromptCategorySelect"></select>
+                    </div>
+                </div>
+                <div class="modal-form-group">
+                    <label>System Prompt Core Text</label>
+                    <textarea id="formPromptText" rows="5" placeholder="Define the core logic structure..." required></textarea>
+                </div>
+                <div class="modal-form-group">
+                    <label>Sub-Category Branch</label>
+                    <input type="text" id="formPromptSubCategory" placeholder="e.g., Blogger Tools">
+                </div>
+                <button type="submit" class="liquid-brutal-master-btn submit-action-btn">Commit to System Core</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="system-modal-backdrop-overlay" id="categoryFormModal">
+        <div class="liquid-gel-modal-box">
+            <div class="modal-box-header">
+                <h2>Add Custom Category</h2>
+                <button class="modal-close-icon-btn" onclick="UIController.closeOpenModals()"><i data-lucide="x"></i></button>
+            </div>
+            <form id="categoryDataAssetForm">
+                <div class="modal-form-group">
+                    <label>Category Label Name</label>
+                    <input type="text" id="formNewCatName" placeholder="e.g., Data Science, UI Design" required>
+                </div>
+                <div class="modal-form-group">
+                    <label>Brutalist Core Highlight Color</label>
+                    <select id="formNewCatColor">
+                        <option value="#dfff4f">Neon Yellow Accent</option>
+                        <option value="#7c4dff">Deep Plasma Purple</option>
+                        <option value="#32e27b">High-Contrast Mint Green</option>
+                        <option value="#3ebdff">Vibrant Fluid Blue</option>
+                        <option value="#ff6b6b">Radical Coral Rose</option>
+                    </select>
+                </div>
+                <button type="submit" class="liquid-brutal-master-btn submit-action-btn" style="background: var(--neon-yellow-shadow);">Inject Category Branch</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="system-modal-backdrop-overlay" id="settingsPanelModal">
+        <div class="liquid-gel-modal-box">
+            <div class="modal-box-header">
+                <h2>System Settings</h2>
+                <button class="modal-close-icon-btn" onclick="UIController.closeOpenModals()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-scrollable-body-viewport">
+                
+                <div class="settings-interactive-card" id="settingsAuthBtnSlot">
+                </div>
+
+                <div class="settings-interactive-card" style="margin-top: 16px;">
+                    <h4>Wipe System Cache</h4>
+                    <p style="font-size: 12px; opacity:0.75; line-height:1.45; margin-bottom:12px;">Completely clear browser memory state registers to initial values.</p>
+                    <button class="liquid-brutal-master-btn" style="background:#ff6b6b; color:#fff; font-size:12px; padding:8px 14px;" onclick="MemoryStore.purgeSystemDatabaseCache()">Wipe Local Cache</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-notification-center-hub" id="toastNotificationHub"></div>
+
+    <script src="app-dp.js"></script>
+    <script src="app-ui.js"></script>
+    <script src="APP-AUTH.js"></script>
+</body>
+</html>
