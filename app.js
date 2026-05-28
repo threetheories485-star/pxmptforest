@@ -7,12 +7,12 @@
 // --- FIREBASE CLOUD CONFIGURATION ---
 // Paste your live credentials here when you are ready to switch from local to cloud.
 const FirebaseEnvironment = {
-    apiKey: "AIzaSyCDnJh7GpO71l8pVIZBQI",
-    authDomain: "prompt-7914d.p.com",
+    apiKey: "AIzaSyCDnJh7GpOQnwccFWGEcwoQ71l8pVIZBQI",
+    authDomain: "prompt-7914d.firebaseapp.com",
     projectId: "prompt-7914d",
-    storageBucket: "prompt-rebasestorage.app",
-    messagingSenderId: "8483255",
-    appId: "1:848428533255:web:b4278c1ae8ca2"
+    storageBucket: "prompt-7914d.firebasestorage.app",
+    messagingSenderId: "848428533255",
+    appId: "1:848428533255:web:b42f1a0c0e1278c1ae8ca2"
 
 };
 
