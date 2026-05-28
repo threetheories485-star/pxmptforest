@@ -7,12 +7,12 @@
 // --- FIREBASE CLOUD CONFIGURATION ---
 // Paste your live credentials here when you are ready to switch from local to cloud.
 const FirebaseEnvironment = {
-    apiKey: "AIzaSyCDnJh7GpOQnwccFWGEcwoQ71l8pVIZBQI",
-    authDomain: "prompt-7914d.firebaseapp.com",
+    apiKey: "AIzaSyCDnJh7GpO71l8pVIZBQI",
+    authDomain: "prompt-7914d.p.com",
     projectId: "prompt-7914d",
-    storageBucket: "prompt-7914d.firebasestorage.app",
-    messagingSenderId: "848428533255",
-    appId: "1:848428533255:web:b42f1a0c0e1278c1ae8ca2"
+    storageBucket: "prompt-rebasestorage.app",
+    messagingSenderId: "8483255",
+    appId: "1:848428533255:web:b4278c1ae8ca2"
 
 };
 
@@ -48,22 +48,233 @@ const AppEngine = {
         },
 
     // --- 2. INITIALIZATION ---
+    // --- 2. INITIALIZATION & CLOUD SYNC ---
     init() {
-        // Hydrate Database
-        const localPrompts = localStorage.getItem("forest_prompts_v4");
-        const localCategories = localStorage.getItem("forest_categories_v4");
+        // Bind UI handlers first
+        this.bindEvents();
 
-        this.prompts = localPrompts ? JSON.parse(localPrompts) : [...this.fallbackPresets.prompts];
-        this.categories = localCategories ? JSON.parse(localCategories) : [...this.fallbackPresets.categories];
+        // Attempt to initialise Firebase (if configured) before attaching auth listeners
+        this.initFirebase();
+
+        // Use the initialized auth instance when available, otherwise fall back to local-only mode
+        const authRef = this.auth || window.auth;
+        if (authRef && typeof authRef.onAuthStateChanged === 'function') {
+            authRef.onAuthStateChanged(async (user) => {
+                if (user) {
+                    // 🟢 USER LOGGED IN -> Load their Cloud Profile
+                    this.authenticatedUser = {
+                        uid: user.uid,
+                        name: user.displayName || "Vault User",
+                        email: user.email,
+                        photoURL: user.photoURL || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.displayName || user.email) + "&background=7c4dff&color=fff"
+                    };
+                    await this.fetchCloudData(); // Pull data from Firestore
+                } else {
+                    // 🔴 USER LOGGED OUT -> Use Local Browser Data Only
+                    this.authenticatedUser = null;
+                    const localPrompts = localStorage.getItem("forest_prompts_v4");
+                    const localCategories = localStorage.getItem("forest_categories_v4");
+                    this.prompts = localPrompts ? JSON.parse(localPrompts) : [...this.fallbackPresets.prompts];
+                    this.categories = localCategories ? JSON.parse(localCategories) : [...this.fallbackPresets.categories];
+                    this.syncUI();
+                }
+
+                this.evaluateAuthState();
+                this.switchViewport('home');
+            });
+        } else {
+            // No Firebase auth available — hydrate from local storage and update UI
+            this.authenticatedUser = JSON.parse(localStorage.getItem('forest_auth_token_v4')) || null;
+            const localPrompts = localStorage.getItem("forest_prompts_v4");
+            const localCategories = localStorage.getItem("forest_categories_v4");
+            this.prompts = localPrompts ? JSON.parse(localPrompts) : [...this.fallbackPresets.prompts];
+            this.categories = localCategories ? JSON.parse(localCategories) : [...this.fallbackPresets.categories];
+            this.evaluateAuthState();
+            this.switchViewport('home');
+        }
+    },
+
+    // 🚀 NEW: PULL DATA FROM FIRESTORE
+    async fetchCloudData() {
+        if (!this.authenticatedUser) return;
         
-        if (!localPrompts) this.saveData();
+        try {
+            this.dispatchToastAlert("Syncing Vault with Cloud...", "info");
+            // Look up the user's specific document in the database via this.db
+            const dbRef = this.db || window.db;
+            if (!dbRef) {
+                this.dispatchToastAlert('No cloud database available.', 'warning');
+                return;
+            }
+            const docRef = dbRef.collection("users").doc(this.authenticatedUser.uid);
+            const docSnap = await docRef.get();
+            
+            if (docSnap.exists) {
+                // Load their saved cloud data into the app
+                const data = docSnap.data();
+                this.prompts = data.prompts || [];
+                this.categories = data.categories || [];
+                this.dispatchToastAlert("Cloud Sync Complete.", "success");
+            } else {
+                // First time logging in! Set up their cloud vault with default data
+                this.prompts = [...this.fallbackPresets.prompts];
+                this.categories = [...this.fallbackPresets.categories];
+                await this.saveData(); 
+            }
+            this.syncUI(); // Refresh the screen with the loaded data
+        } catch (error) {
+            console.error("Cloud Sync Error:", error);
+            this.dispatchToastAlert("Could not sync cloud data.", "warning");
+        }
+    },
 
-        // Hydrate Auth
-        const preservedToken = localStorage.getItem("forest_auth_token_v4");
-        if (preservedToken) {
-            this.authenticatedUser = JSON.parse(preservedToken);
+    // 🚀 UPDATED: PUSH DATA TO FIRESTORE
+    async saveData() {
+        // 1. Always save a local backup for speed/offline mode
+        localStorage.setItem("forest_prompts_v4", JSON.stringify(this.prompts));
+        localStorage.setItem("forest_categories_v4", JSON.stringify(this.categories));
+
+        // 2. If the user is logged in, push updates to Firebase!
+        if (this.authenticatedUser && this.authenticatedUser.uid) {
+            try {
+                await db.collection("users").doc(this.authenticatedUser.uid).set({
+                    prompts: this.prompts,
+                    categories: this.categories
+                }, { merge: true }); // Merge ensures we don't accidentally wipe data
+            } catch (error) {
+                console.error("Cloud Save Error:", error);
+            }
+        }
+    },
+
+    // --- 3. AUTHENTICATION LOGIC ---
+    switchAuthTab(mode) {
+        this.authMode = mode;
+        const nameGroup = document.getElementById("nameInputGroup");
+        const submitBtn = document.getElementById("authSubmitBtn");
+        
+        document.getElementById("tabLogin").classList.remove("active");
+        document.getElementById("tabSignup").classList.remove("active");
+
+        if (mode === 'signup') {
+            document.getElementById("tabSignup").classList.add("active");
+            nameGroup.style.display = "flex";
+            document.getElementById("authName").required = true;
+            submitBtn.innerText = "Create Vault Account";
+            submitBtn.style.background = "var(--mint-green-accent)";
+        } else {
+            document.getElementById("tabLogin").classList.add("active");
+            nameGroup.style.display = "none";
+            document.getElementById("authName").required = false;
+            submitBtn.innerText = "Access Vault";
+            submitBtn.style.background = "var(--neon-yellow-shadow)";
+        }
+    },
+
+    async executeStandardAuth(e) {
+        e.preventDefault();
+        const nameInput = document.getElementById("authName").value.trim();
+        const emailInput = document.getElementById("authEmail").value.trim();
+        const passInput = document.getElementById("authPassword").value.trim();
+
+        if (this.authMode === 'signup' && !nameInput) {
+            this.dispatchToastAlert("Please provide your full name.", "warning");
+            return;
         }
 
+        const submitBtn = document.getElementById("authSubmitBtn");
+        submitBtn.disabled = true;
+
+        try {
+            if (this.authMode === 'signup') {
+                const userCredential = await auth.createUserWithEmailAndPassword(emailInput, passInput);
+                await userCredential.user.updateProfile({ displayName: nameInput });
+            } else {
+                await auth.signInWithEmailAndPassword(emailInput, passInput);
+            }
+            this.closeOpenModals();
+            // We don't need to do anything else here! 
+            // auth.onAuthStateChanged (inside init) will automatically fire and fetch the data!
+        } catch (error) {
+            this.dispatchToastAlert(error.message, "warning");
+        } finally {
+            submitBtn.disabled = false;
+        }
+    },
+
+    async executeGoogleSignIn() {
+        try {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            await auth.signInWithPopup(provider);
+            this.closeOpenModals();
+        } catch (error) {
+            this.dispatchToastAlert("Google Sign-In Cancelled or Failed.", "warning");
+        }
+    },
+
+    async executeSignOut() {
+        try {
+            await auth.signOut();
+            this.closeOpenModals();
+        } catch (error) {
+            this.dispatchToastAlert("Error signing out.", "warning");
+        }
+    },
+
+    // --- 4. STATE EVALUATION (Replaces Old evaluateAuthState) ---
+    evaluateAuthState() {
+        const headerHook = document.getElementById("headerAuthSlot");
+        const settingsHook = document.getElementById("settingsAuthBtnSlot");
+
+        if (this.authenticatedUser) {
+            if (headerHook) {
+                headerHook.innerHTML = `
+                    <div class="user-profile-identity-capsule" onclick="AppEngine.launchTargetModalOverlay('settingsPanelModal')" title="View Account">
+                        <img src="${this.authenticatedUser.photoURL}" class="user-avatar-image-node" alt="Avatar">
+                        <div class="user-label-strings">
+                            <h5>${this.authenticatedUser.name}</h5>
+                            <p style="color: var(--brutal-black-line); font-weight:700;">Account Settings</p>
+                        </div>
+                    </div>
+                `;
+            }
+            if (settingsHook) {
+                settingsHook.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+                        <img src="${this.authenticatedUser.photoURL}" style="width: 54px; height: 54px; border-radius: 50%; border: 3px solid var(--brutal-black-line); box-shadow: 2px 2px 0px var(--brutal-black-line);">
+                        <div>
+                            <h5 style="font-family: var(--font-heading); font-size: 18px; font-weight: 800; color: var(--text-charcoal-primary);">${this.authenticatedUser.name}</h5>
+                            <p style="font-size: 13px; opacity: 0.7; margin-top: 2px;">${this.authenticatedUser.email}</p>
+                        </div>
+                    </div>
+                    <button class="liquid-brutal-master-btn" style="background: var(--soft-coral-accent); color:#fff; width: 100%; justify-content: center;" onclick="AppEngine.executeSignOut()">
+                        <i data-lucide="log-out" style="width: 16px; height: 16px;"></i> Sign Out
+                    </button>
+                `;
+            }
+        } else {
+            if (headerHook) {
+                headerHook.innerHTML = `
+                    <button class="liquid-brutal-master-btn" style="background: var(--neon-yellow-shadow); padding: 8px 16px; font-size:13px;" onclick="AppEngine.launchTargetModalOverlay('authModal')">
+                        <i data-lucide="user" style="width: 15px; height: 15px;"></i> Sign In
+                    </button>
+                `;
+            }
+            if (settingsHook) {
+                settingsHook.innerHTML = `
+                    <p style="font-size: 13px; font-weight: 600; margin-bottom: 14px;">You are currently browsing the local vault as a guest.</p>
+                    <button class="liquid-brutal-master-btn" style="background: var(--neon-yellow-shadow); width: 100%; justify-content: center;" onclick="AppEngine.closeOpenModals(); AppEngine.launchTargetModalOverlay('authModal')">
+                        Log In or Sign Up
+                    </button>
+                `;
+            }
+        }
+        if (window.lucide) lucide.createIcons();
+    },
+
+    // --- 5. DATA MUTATION (Remains the same as before) ---
+    handlePromptSubmit(e) {
+// ... The rest of your code (handlePromptSubmit, handleCategorySubmit, etc.) remains exactly the same!
         // Bind DOM Listeners
         this.bindEvents();
 
