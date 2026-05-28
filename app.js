@@ -99,57 +99,123 @@ const AppEngine = {
         }
     },
 
-    executeStandardAuth(e) {
+   (e)
+   // --- 3. AUTHENTICATION LOGIC ---
+    switchAuthTab(mode) {
+        this.authMode = mode;
+        const nameGroup = document.getElementById("nameInputGroup");
+        const submitBtn = document.getElementById("authSubmitBtn");
+        
+        document.getElementById("tabLogin").classList.remove("active");
+        document.getElementById("tabSignup").classList.remove("active");
+
+        if (mode === 'signup') {
+            document.getElementById("tabSignup").classList.add("active");
+            nameGroup.style.display = "flex";
+            document.getElementById("authName").required = true;
+            submitBtn.innerText = "Create Vault Account";
+            submitBtn.style.background = "var(--mint-green-accent)";
+        } else {
+            document.getElementById("tabLogin").classList.add("active");
+            nameGroup.style.display = "none";
+            document.getElementById("authName").required = false;
+            submitBtn.innerText = "Access Vault";
+            submitBtn.style.background = "var(--neon-yellow-shadow)";
+        }
+    },
+
+    // 🚀 REAL FIREBASE EMAIL & PASSWORD AUTH
+    async executeStandardAuth(e) {
         e.preventDefault();
         const nameInput = document.getElementById("authName").value.trim();
         const emailInput = document.getElementById("authEmail").value.trim();
+        const passInput = document.getElementById("authPassword").value.trim();
 
         if (this.authMode === 'signup' && !nameInput) {
             this.dispatchToastAlert("Please provide your full name.", "warning");
             return;
         }
 
-        this.dispatchToastAlert("Authenticating...", "info");
+        this.dispatchToastAlert("Authenticating securely...", "info");
+        const submitBtn = document.getElementById("authSubmitBtn");
+        submitBtn.disabled = true; // Prevent double-clicking
 
-        setTimeout(() => {
+        try {
+            let userCredential;
+            
+            if (this.authMode === 'signup') {
+                // 1. Create the account in Firebase
+                userCredential = await auth.createUserWithEmailAndPassword(emailInput, passInput);
+                
+                // 2. Attach the user's name to their Firebase profile
+                await userCredential.user.updateProfile({
+                    displayName: nameInput
+                });
+            } else {
+                // Log in existing user
+                userCredential = await auth.signInWithEmailAndPassword(emailInput, passInput);
+            }
+
+            // Sync with our app's visual state
+            const fallbackAvatar = "https://ui-avatars.com/api/?name=" + encodeURIComponent(userCredential.user.displayName || emailInput) + "&background=7c4dff&color=fff";
+            
             this.authenticatedUser = {
-                uid: "forest_user_" + Date.now(),
-                name: this.authMode === 'signup' ? nameInput : "Techstaars Operator",
-                email: emailInput,
-                photoURL: "https://ui-avatars.com/api/?name=" + encodeURIComponent(this.authMode === 'signup' ? nameInput : emailInput) + "&background=7c4dff&color=fff"
+                uid: userCredential.user.uid,
+                name: userCredential.user.displayName || nameInput || "Vault User",
+                email: userCredential.user.email,
+                photoURL: userCredential.user.photoURL || fallbackAvatar
             };
             
             localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
             this.closeOpenModals();
             this.evaluateAuthState();
-            this.dispatchToastAlert(`Vault Synced. Welcome!`, "success");
-        }, 800);
+            this.dispatchToastAlert(`Vault Synced. Welcome, ${this.authenticatedUser.name}!`, "success");
+
+        } catch (error) {
+            // Firebase automatically handles error messages (e.g., "Wrong password", "Email already in use")
+            this.dispatchToastAlert(error.message, "warning");
+        } finally {
+            submitBtn.disabled = false;
+        }
     },
 
-    executeGoogleSignIn() {
-        this.dispatchToastAlert("Connecting to Google Gateways...", "info");
+    // 🚀 REAL FIREBASE GOOGLE AUTH
+    async executeGoogleSignIn() {
+        this.dispatchToastAlert("Opening Google Secure Gateway...", "info");
         
-        setTimeout(() => {
+        try {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            const userCredential = await auth.signInWithPopup(provider);
+            
             this.authenticatedUser = {
-                uid: "goog_oauth2_1829",
-                name: "Techstaars",
-                email: "techstaars@gmail.com",
-                photoURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
+                uid: userCredential.user.uid,
+                name: userCredential.user.displayName,
+                email: userCredential.user.email,
+                photoURL: userCredential.user.photoURL
             };
             
             localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
             this.closeOpenModals();
             this.evaluateAuthState();
             this.dispatchToastAlert(`Google Identity Linked. Welcome!`, "success");
-        }, 700);
+
+        } catch (error) {
+            this.dispatchToastAlert("Google Sign-In Cancelled or Failed.", "warning");
+        }
     },
 
-    executeSignOut() {
-        this.authenticatedUser = null;
-        localStorage.removeItem("forest_auth_token_v4");
-        this.closeOpenModals();
-        this.evaluateAuthState();
-        this.dispatchToastAlert("Successfully signed out.", "info");
+    // 🚀 REAL FIREBASE SIGN OUT
+    async executeSignOut() {
+        try {
+            await auth.signOut();
+            this.authenticatedUser = null;
+            localStorage.removeItem("forest_auth_token_v4");
+            this.closeOpenModals();
+            this.evaluateAuthState();
+            this.dispatchToastAlert("Successfully signed out.", "info");
+        } catch (error) {
+            this.dispatchToastAlert("Error signing out.", "warning");
+        }   
     },
 
     evaluateAuthState() {
