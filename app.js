@@ -7,12 +7,12 @@
 // --- FIREBASE CLOUD CONFIGURATION ---
 // Paste your live credentials here when you are ready to switch from local to cloud.
 const FirebaseEnvironment = {
-    apiKey: "AIzaSyCDnJh7GpOQnwccFWGEcwoQ71l8pVIZBQI",
-    authDomain: "prompt-7914d.firebaseapp.com",
+    apiKey: "AIzaSyCDnJh7GpO71l8pVIZBQI",
+    authDomain: "prompt-7914d.p.com",
     projectId: "prompt-7914d",
-    storageBucket: "prompt-7914d.firebasestorage.app",
-    messagingSenderId: "848428533255",
-    appId: "1:848428533255:web:b42f1a0c0e1278c1ae8ca2"
+    storageBucket: "prompt-rebasestorage.app",
+    messagingSenderId: "8483255",
+    appId: "1:848428533255:web:b4278c1ae8ca2"
 
 };
 
@@ -21,6 +21,8 @@ const AppEngine = {
     prompts: [],
     categories: [],
     authenticatedUser: null,
+    auth: null,
+    db: null,
     authMode: 'login', // 'login' or 'signup'
     
     filterState: {
@@ -42,8 +44,8 @@ const AppEngine = {
             { name: "Marketing", color: "#32e27b" },    /* Mint Green */
             { name: "Development", color: "#3ebdff" },  /* Sky Blue */
             { name: "Business", color: "#ff6b6b" }      /* Coral */
-        ]
-    },
+        ],
+        },
 
     // --- 2. INITIALIZATION ---
     init() {
@@ -65,6 +67,9 @@ const AppEngine = {
         // Bind DOM Listeners
         this.bindEvents();
 
+        // Initialize Firebase if available
+        this.initFirebase();
+
         // Initial Paint
         this.evaluateAuthState();
         this.switchViewport('home'); 
@@ -73,7 +78,22 @@ const AppEngine = {
     saveData() {
         localStorage.setItem("forest_prompts_v4", JSON.stringify(this.prompts));
         localStorage.setItem("forest_categories_v4", JSON.stringify(this.categories));
+
+        // If Firestore is available and user is authenticated, persist to cloud
+        try {
+            if (this.db && this.authenticatedUser && this.authenticatedUser.uid) {
+                this.db.collection('users').doc(this.authenticatedUser.uid).set({
+                    prompts: this.prompts,
+                    categories: this.categories,
+                    updatedAt: Date.now()
+                }, { merge: true }).catch(() => {});
+            }
+        } catch (err) {
+            // non-fatal
+        }
     },
+
+
 
     // --- 3. AUTHENTICATION LOGIC ---
     switchAuthTab(mode) {
@@ -99,29 +119,44 @@ const AppEngine = {
         }
     },
 
-   (e)
-   // --- 3. AUTHENTICATION LOGIC ---
-    switchAuthTab(mode) {
-        this.authMode = mode;
-        const nameGroup = document.getElementById("nameInputGroup");
-        const submitBtn = document.getElementById("authSubmitBtn");
-        
-        document.getElementById("tabLogin").classList.remove("active");
-        document.getElementById("tabSignup").classList.remove("active");
+    // Initialize Firebase (compat) when a valid config is present and the SDK is loaded
+    initFirebase() {
+        try {
+            if (!FirebaseEnvironment || !FirebaseEnvironment.apiKey || FirebaseEnvironment.apiKey.includes('YOUR')) return;
+            if (window.firebase && !this.db) {
+                try {
+                    firebase.initializeApp(FirebaseEnvironment);
+                } catch (e) {
+                    // already initialized
+                }
+                window.auth = firebase.auth();
+                window.db = firebase.firestore();
+                this.auth = window.auth;
+                this.db = window.db;
 
-        if (mode === 'signup') {
-            document.getElementById("tabSignup").classList.add("active");
-            nameGroup.style.display = "flex";
-            document.getElementById("authName").required = true;
-            submitBtn.innerText = "Create Vault Account";
-            submitBtn.style.background = "var(--mint-green-accent)";
-        } else {
-            document.getElementById("tabLogin").classList.add("active");
-            nameGroup.style.display = "none";
-            document.getElementById("authName").required = false;
-            submitBtn.innerText = "Access Vault";
-            submitBtn.style.background = "var(--neon-yellow-shadow)";
+                // Observe auth state changes to sync UI
+                this.auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        this.authenticatedUser = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
+                        localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
+                    } else {
+                        // preserve guest state
+                    }
+                    this.evaluateAuthState();
+                });
+            }
+        } catch (err) {
+            console.warn('Firebase init skipped', err);
         }
+    },
+
+    // Simple debounce helper
+    debounce(fn, wait = 180) {
+        let t = null;
+        return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), wait);
+        };
     },
 
     // 🚀 REAL FIREBASE EMAIL & PASSWORD AUTH
@@ -136,78 +171,97 @@ const AppEngine = {
             return;
         }
 
-        this.dispatchToastAlert("Authenticating securely...", "info");
+        this.dispatchToastAlert("Authenticating...", "info");
         const submitBtn = document.getElementById("authSubmitBtn");
-        submitBtn.disabled = true; // Prevent double-clicking
+        if (submitBtn) submitBtn.disabled = true;
 
-        try {
-            let userCredential;
-            
-            if (this.authMode === 'signup') {
-                // 1. Create the account in Firebase
-                userCredential = await auth.createUserWithEmailAndPassword(emailInput, passInput);
-                
-                // 2. Attach the user's name to their Firebase profile
-                await userCredential.user.updateProfile({
-                    displayName: nameInput
-                });
-            } else {
-                // Log in existing user
-                userCredential = await auth.signInWithEmailAndPassword(emailInput, passInput);
+        // If Firebase auth is available, use it; otherwise fall back to local simulated auth
+        if (window && window.auth) {
+            try {
+                let userCredential;
+                if (this.authMode === 'signup') {
+                    userCredential = await auth.createUserWithEmailAndPassword(emailInput, passInput);
+                    await userCredential.user.updateProfile({ displayName: nameInput });
+                } else {
+                    userCredential = await auth.signInWithEmailAndPassword(emailInput, passInput);
+                }
+
+                const fallbackAvatar = "https://ui-avatars.com/api/?name=" + encodeURIComponent(userCredential.user.displayName || emailInput) + "&background=7c4dff&color=fff";
+                this.authenticatedUser = {
+                    uid: userCredential.user.uid,
+                    name: userCredential.user.displayName || nameInput || "Vault User",
+                    email: userCredential.user.email,
+                    photoURL: userCredential.user.photoURL || fallbackAvatar
+                };
+
+                localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
+                this.closeOpenModals();
+                this.evaluateAuthState();
+                this.dispatchToastAlert(`Vault Synced. Welcome, ${this.authenticatedUser.name}!`, "success");
+            } catch (error) {
+                this.dispatchToastAlert(error.message || 'Authentication failed', "warning");
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
             }
-
-            // Sync with our app's visual state
-            const fallbackAvatar = "https://ui-avatars.com/api/?name=" + encodeURIComponent(userCredential.user.displayName || emailInput) + "&background=7c4dff&color=fff";
-            
-            this.authenticatedUser = {
-                uid: userCredential.user.uid,
-                name: userCredential.user.displayName || nameInput || "Vault User",
-                email: userCredential.user.email,
-                photoURL: userCredential.user.photoURL || fallbackAvatar
-            };
-            
-            localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
-            this.closeOpenModals();
-            this.evaluateAuthState();
-            this.dispatchToastAlert(`Vault Synced. Welcome, ${this.authenticatedUser.name}!`, "success");
-
-        } catch (error) {
-            // Firebase automatically handles error messages (e.g., "Wrong password", "Email already in use")
-            this.dispatchToastAlert(error.message, "warning");
-        } finally {
-            submitBtn.disabled = false;
+        } else {
+            // Local fallback (no Firebase configured) — preserves current UX
+            setTimeout(() => {
+                this.authenticatedUser = {
+                    uid: "forest_user_" + Date.now(),
+                    name: this.authMode === 'signup' ? nameInput : "Local Vault User",
+                    email: emailInput,
+                    photoURL: "https://ui-avatars.com/api/?name=" + encodeURIComponent(this.authMode === 'signup' ? nameInput : emailInput) + "&background=7c4dff&color=fff"
+                };
+                localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
+                this.closeOpenModals();
+                this.evaluateAuthState();
+                this.dispatchToastAlert(`Vault Synced. Welcome!`, "success");
+                if (submitBtn) submitBtn.disabled = false;
+            }, 700);
         }
     },
 
     // 🚀 REAL FIREBASE GOOGLE AUTH
     async executeGoogleSignIn() {
         this.dispatchToastAlert("Opening Google Secure Gateway...", "info");
-        
-        try {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            const userCredential = await auth.signInWithPopup(provider);
-            
-            this.authenticatedUser = {
-                uid: userCredential.user.uid,
-                name: userCredential.user.displayName,
-                email: userCredential.user.email,
-                photoURL: userCredential.user.photoURL
-            };
-            
-            localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
-            this.closeOpenModals();
-            this.evaluateAuthState();
-            this.dispatchToastAlert(`Google Identity Linked. Welcome!`, "success");
-
-        } catch (error) {
-            this.dispatchToastAlert("Google Sign-In Cancelled or Failed.", "warning");
+        if (window && window.auth && window.firebase) {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const userCredential = await auth.signInWithPopup(provider);
+                this.authenticatedUser = {
+                    uid: userCredential.user.uid,
+                    name: userCredential.user.displayName,
+                    email: userCredential.user.email,
+                    photoURL: userCredential.user.photoURL
+                };
+                localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
+                this.closeOpenModals();
+                this.evaluateAuthState();
+                this.dispatchToastAlert(`Google Identity Linked. Welcome!`, "success");
+            } catch (error) {
+                this.dispatchToastAlert(error.message || "Google Sign-In Cancelled or Failed.", "warning");
+            }
+        } else {
+            // Fallback simulated OAuth (local only)
+            setTimeout(() => {
+                this.authenticatedUser = {
+                    uid: "goog_oauth2_local_" + Date.now(),
+                    name: "Local Google User",
+                    email: "user@local.google",
+                    photoURL: "https://ui-avatars.com/api/?name=Local+Google&background=7c4dff&color=fff"
+                };
+                localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
+                this.closeOpenModals();
+                this.evaluateAuthState();
+                this.dispatchToastAlert(`Google Identity Linked. Welcome!`, "success");
+            }, 600);
         }
     },
 
     // 🚀 REAL FIREBASE SIGN OUT
     async executeSignOut() {
         try {
-            await auth.signOut();
+            if (window && window.auth) await auth.signOut();
             this.authenticatedUser = null;
             localStorage.removeItem("forest_auth_token_v4");
             this.closeOpenModals();
@@ -215,7 +269,7 @@ const AppEngine = {
             this.dispatchToastAlert("Successfully signed out.", "info");
         } catch (error) {
             this.dispatchToastAlert("Error signing out.", "warning");
-        }   
+        }
     },
 
     evaluateAuthState() {
@@ -349,10 +403,11 @@ const AppEngine = {
     bindEvents() {
         const searchInput = document.getElementById("promptSearchField");
         if (searchInput) {
-            searchInput.addEventListener("input", (e) => {
+            const handler = this.debounce((e) => {
                 this.filterState.searchQuery = e.target.value;
                 this.renderPrompts();
-            });
+            }, 160);
+            searchInput.addEventListener("input", handler);
         }
 
         document.getElementById("authGatewayForm").addEventListener("submit", (e) => this.executeStandardAuth(e));
@@ -456,6 +511,8 @@ const AppEngine = {
         if (!grid) return;
         grid.innerHTML = "";
 
+        const frag = document.createDocumentFragment();
+
         let activeDataset = this.prompts.filter(item => {
             const queryMatch = item.title.toLowerCase().includes(this.filterState.searchQuery.toLowerCase()) || 
                                item.text.toLowerCase().includes(this.filterState.searchQuery.toLowerCase());
@@ -471,57 +528,93 @@ const AppEngine = {
                     <p>No operational blueprints match the current filtering parameters.</p>
                 </div>
             `;
-            if (window.lucide) lucide.createIcons();
+            requestAnimationFrame(() => { if (window.lucide) lucide.createIcons(); });
             return;
         }
 
-        activeDataset.forEach(prompt => {
-            const categoryData = this.categories.find(c => c.name === prompt.category) || { color: '#ffffff' };
-            const safePayload = btoa(unescape(encodeURIComponent(prompt.text)));
-            
-            const wrapper = document.createElement("div");
-            wrapper.className = "gel-molded-prompt-card";
-            
-            wrapper.innerHTML = `
-                <div class="card-header-bar" style="background-color: ${categoryData.color};">
-                    <div class="card-header-left-cluster">
-                        <div class="card-custom-icon-box">${prompt.icon}</div>
-                        <span class="card-header-title">${prompt.title}</span>
+        // If dataset small, render synchronously; otherwise chunk-render to keep UI responsive
+        const CHUNK_SIZE = 12;
+        if (activeDataset.length <= CHUNK_SIZE) {
+            activeDataset.forEach(prompt => {
+                const categoryData = this.categories.find(c => c.name === prompt.category) || { color: '#ffffff' };
+                const safePayload = btoa(unescape(encodeURIComponent(prompt.text)));
+                const wrapper = document.createElement("div");
+                wrapper.className = "gel-molded-prompt-card";
+                wrapper.innerHTML = `
+                    <div class="card-header-bar" style="background-color: ${categoryData.color};">
+                        <div class="card-header-left-cluster">
+                            <div class="card-custom-icon-box">${prompt.icon}</div>
+                            <span class="card-header-title">${prompt.title}</span>
+                        </div>
+                        <div class="card-action-utilities-mesh">
+                            <button class="card-micro-action-btn" onclick="AppEngine.openPromptWriterModal(${prompt.id})" title="Edit Blueprint"><i data-lucide="pencil" style="width: 14px; height: 14px;"></i></button>
+                            <button class="card-micro-action-btn" style="color: #444;" onclick="AppEngine.executeCardPurge(${prompt.id})" title="Purge Record"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+                        </div>
                     </div>
-                    
-                    <div class="card-action-utilities-mesh">
-                        <button class="card-micro-action-btn" onclick="AppEngine.openPromptWriterModal(${prompt.id})" title="Edit Blueprint">
-                            <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
-                        </button>
-                        <button class="card-micro-action-btn" style="color: #444;" onclick="AppEngine.executeCardPurge(${prompt.id})" title="Purge Record">
-                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-                        </button>
+                    <div class="card-textual-body"><p>${prompt.text}</p></div>
+                    <div class="card-lower-row">
+                        <span class="card-category-tag-pill">${prompt.subCategory}</span>
+                        <div class="card-footer-tray-actions">
+                            <button class="tray-action-btn-node" onclick="AppEngine.toggleCardFavoritedState(${prompt.id})" title="Like Blueprint"><i data-lucide="heart" style="width: 18px; height: 18px; ${prompt.liked ? 'fill: var(--premium-purple-accent); stroke: var(--premium-purple-accent);' : ''}"></i></button>
+                            <button class="tray-action-btn-node" onclick="AppEngine.copyTextToBuffer('${safePayload}')" title="Copy Raw String"><i data-lucide="copy" style="width: 18px; height: 18px;"></i></button>
+                            <button class="tray-action-btn-node" onclick="AppEngine.generateShareTokenLink(${prompt.id})" title="Copy Share Link"><i data-lucide="more-vertical" style="width: 18px; height: 18px;"></i></button>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="card-textual-body">
-                    <p>${prompt.text}</p>
-                </div>
-                
-                <div class="card-lower-row">
-                    <span class="card-category-tag-pill">${prompt.subCategory}</span>
-                    <div class="card-footer-tray-actions">
-                        <button class="tray-action-btn-node" onclick="AppEngine.toggleCardFavoritedState(${prompt.id})" title="Like Blueprint">
-                            <i data-lucide="heart" style="width: 18px; height: 18px; ${prompt.liked ? 'fill: var(--premium-purple-accent); stroke: var(--premium-purple-accent);' : ''}"></i>
-                        </button>
-                        <button class="tray-action-btn-node" onclick="AppEngine.copyTextToBuffer('${safePayload}')" title="Copy Raw String">
-                            <i data-lucide="copy" style="width: 18px; height: 18px;"></i>
-                        </button>
-                        <button class="tray-action-btn-node" onclick="AppEngine.generateShareTokenLink(${prompt.id})" title="Copy Share Link">
-                            <i data-lucide="more-vertical" style="width: 18px; height: 18px;"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            grid.appendChild(wrapper);
-        });
+                `;
+                frag.appendChild(wrapper);
+            });
+            grid.appendChild(frag);
+            requestAnimationFrame(() => { if (window.lucide) lucide.createIcons(); });
+            return;
+        }
 
-        if (window.lucide) lucide.createIcons();
+        // Chunked rendering for large datasets
+        let index = 0;
+        const renderChunk = (deadline) => {
+            const end = Math.min(index + CHUNK_SIZE, activeDataset.length);
+            for (; index < end; index++) {
+                const prompt = activeDataset[index];
+                const categoryData = this.categories.find(c => c.name === prompt.category) || { color: '#ffffff' };
+                const safePayload = btoa(unescape(encodeURIComponent(prompt.text)));
+                const wrapper = document.createElement("div");
+                wrapper.className = "gel-molded-prompt-card";
+                wrapper.innerHTML = `
+                    <div class="card-header-bar" style="background-color: ${categoryData.color};">
+                        <div class="card-header-left-cluster">
+                            <div class="card-custom-icon-box">${prompt.icon}</div>
+                            <span class="card-header-title">${prompt.title}</span>
+                        </div>
+                        <div class="card-action-utilities-mesh">
+                            <button class="card-micro-action-btn" onclick="AppEngine.openPromptWriterModal(${prompt.id})" title="Edit Blueprint"><i data-lucide="pencil" style="width: 14px; height: 14px;"></i></button>
+                            <button class="card-micro-action-btn" style="color: #444;" onclick="AppEngine.executeCardPurge(${prompt.id})" title="Purge Record"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-textual-body"><p>${prompt.text}</p></div>
+                    <div class="card-lower-row">
+                        <span class="card-category-tag-pill">${prompt.subCategory}</span>
+                        <div class="card-footer-tray-actions">
+                            <button class="tray-action-btn-node" onclick="AppEngine.toggleCardFavoritedState(${prompt.id})" title="Like Blueprint"><i data-lucide="heart" style="width: 18px; height: 18px; ${prompt.liked ? 'fill: var(--premium-purple-accent); stroke: var(--premium-purple-accent);' : ''}"></i></button>
+                            <button class="tray-action-btn-node" onclick="AppEngine.copyTextToBuffer('${safePayload}')" title="Copy Raw String"><i data-lucide="copy" style="width: 18px; height: 18px;"></i></button>
+                            <button class="tray-action-btn-node" onclick="AppEngine.generateShareTokenLink(${prompt.id})" title="Copy Share Link"><i data-lucide="more-vertical" style="width: 18px; height: 18px;"></i></button>
+                        </div>
+                    </div>
+                `;
+                frag.appendChild(wrapper);
+            }
+            grid.appendChild(frag);
+
+            if (index < activeDataset.length) {
+                // schedule next chunk
+                if ('requestIdleCallback' in window) requestIdleCallback(renderChunk, { timeout: 200 });
+                else setTimeout(() => renderChunk(), 40);
+            } else {
+                requestAnimationFrame(() => { if (window.lucide) lucide.createIcons(); });
+            }
+        };
+
+        // start chunked render
+        if ('requestIdleCallback' in window) requestIdleCallback(renderChunk, { timeout: 200 });
+        else setTimeout(() => renderChunk(), 20);
     },
 
     renderForestMap() {
