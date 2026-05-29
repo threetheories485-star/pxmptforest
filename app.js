@@ -7,7 +7,7 @@
 // --- FIREBASE CLOUD CONFIGURATION ---
 // Paste your live credentials here when you are ready to switch from local to cloud.
 const FirebaseEnvironment = {
-    apiKey: "AIzaSyCDnJh7GpOQnwccFWGEcwoQ71l8pVIZBQI",
+apiKey: "AIzaSyCDnJh7GpOQnwccFWGEcwoQ71l8pVIZBQI",
     authDomain: "prompt-7914d.firebaseapp.com",
     projectId: "prompt-7914d",
     storageBucket: "prompt-7914d.firebasestorage.app",
@@ -112,8 +112,11 @@ const AppEngine = {
             if (docSnap.exists) {
                 // Load their saved cloud data into the app
                 const data = docSnap.data();
-                this.prompts = data.prompts || [];
-                this.categories = data.categories || [];
+                this.prompts = Array.isArray(data.prompts) ? data.prompts : [];
+                this.categories = Array.isArray(data.categories) ? data.categories : [];
+                if (!this.categories.find(c => c.name === 'all')) {
+                    this.categories.unshift({ name: 'all', color: '#ffffff' });
+                }
                 this.dispatchToastAlert("Cloud Sync Complete.", "success");
             } else {
                 // First time logging in! Set up their cloud vault with default data
@@ -136,13 +139,19 @@ const AppEngine = {
 
         // 2. If the user is logged in, push updates to Firebase!
         if (this.authenticatedUser && this.authenticatedUser.uid) {
-            try {
-                await db.collection("users").doc(this.authenticatedUser.uid).set({
-                    prompts: this.prompts,
-                    categories: this.categories
-                }, { merge: true }); // Merge ensures we don't accidentally wipe data
-            } catch (error) {
-                console.error("Cloud Save Error:", error);
+            const dbRef = this.db || window.db;
+            if (dbRef) {
+                try {
+                    await dbRef.collection("users").doc(this.authenticatedUser.uid).set({
+                        prompts: this.prompts,
+                        categories: this.categories,
+                        updatedAt: (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue)
+                            ? firebase.firestore.FieldValue.serverTimestamp()
+                            : Date.now()
+                    }, { merge: true });
+                } catch (error) {
+                    console.error("Cloud Save Error:", error);
+                }
             }
         }
     },
@@ -171,187 +180,49 @@ const AppEngine = {
         }
     },
 
-    async executeStandardAuth(e) {
-        e.preventDefault();
-        const nameInput = document.getElementById("authName").value.trim();
-        const emailInput = document.getElementById("authEmail").value.trim();
-        const passInput = document.getElementById("authPassword").value.trim();
+    // Auth flow functions are declared later, after Firebase is initialized.
 
-        if (this.authMode === 'signup' && !nameInput) {
-            this.dispatchToastAlert("Please provide your full name.", "warning");
-            return;
-        }
-
-        const submitBtn = document.getElementById("authSubmitBtn");
-        submitBtn.disabled = true;
-
-        try {
-            if (this.authMode === 'signup') {
-                const userCredential = await auth.createUserWithEmailAndPassword(emailInput, passInput);
-                await userCredential.user.updateProfile({ displayName: nameInput });
-            } else {
-                await auth.signInWithEmailAndPassword(emailInput, passInput);
-            }
-            this.closeOpenModals();
-            // We don't need to do anything else here! 
-            // auth.onAuthStateChanged (inside init) will automatically fire and fetch the data!
-        } catch (error) {
-            this.dispatchToastAlert(error.message, "warning");
-        } finally {
-            submitBtn.disabled = false;
-        }
-    },
-
-    async executeGoogleSignIn() {
-        try {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            await auth.signInWithPopup(provider);
-            this.closeOpenModals();
-        } catch (error) {
-            this.dispatchToastAlert("Google Sign-In Cancelled or Failed.", "warning");
-        }
-    },
-
-    async executeSignOut() {
-        try {
-            await auth.signOut();
-            this.closeOpenModals();
-        } catch (error) {
-            this.dispatchToastAlert("Error signing out.", "warning");
-        }
-    },
-
-    // --- 4. STATE EVALUATION (Replaces Old evaluateAuthState) ---
-    evaluateAuthState() {
-        const headerHook = document.getElementById("headerAuthSlot");
-        const settingsHook = document.getElementById("settingsAuthBtnSlot");
-
-        if (this.authenticatedUser) {
-            if (headerHook) {
-                headerHook.innerHTML = `
-                    <div class="user-profile-identity-capsule" onclick="AppEngine.launchTargetModalOverlay('settingsPanelModal')" title="View Account">
-                        <img src="${this.authenticatedUser.photoURL}" class="user-avatar-image-node" alt="Avatar">
-                        <div class="user-label-strings">
-                            <h5>${this.authenticatedUser.name}</h5>
-                            <p style="color: var(--brutal-black-line); font-weight:700;">Account Settings</p>
-                        </div>
-                    </div>
-                `;
-            }
-            if (settingsHook) {
-                settingsHook.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
-                        <img src="${this.authenticatedUser.photoURL}" style="width: 54px; height: 54px; border-radius: 50%; border: 3px solid var(--brutal-black-line); box-shadow: 2px 2px 0px var(--brutal-black-line);">
-                        <div>
-                            <h5 style="font-family: var(--font-heading); font-size: 18px; font-weight: 800; color: var(--text-charcoal-primary);">${this.authenticatedUser.name}</h5>
-                            <p style="font-size: 13px; opacity: 0.7; margin-top: 2px;">${this.authenticatedUser.email}</p>
-                        </div>
-                    </div>
-                    <button class="liquid-brutal-master-btn" style="background: var(--soft-coral-accent); color:#fff; width: 100%; justify-content: center;" onclick="AppEngine.executeSignOut()">
-                        <i data-lucide="log-out" style="width: 16px; height: 16px;"></i> Sign Out
-                    </button>
-                `;
-            }
-        } else {
-            if (headerHook) {
-                headerHook.innerHTML = `
-                    <button class="liquid-brutal-master-btn" style="background: var(--neon-yellow-shadow); padding: 8px 16px; font-size:13px;" onclick="AppEngine.launchTargetModalOverlay('authModal')">
-                        <i data-lucide="user" style="width: 15px; height: 15px;"></i> Sign In
-                    </button>
-                `;
-            }
-            if (settingsHook) {
-                settingsHook.innerHTML = `
-                    <p style="font-size: 13px; font-weight: 600; margin-bottom: 14px;">You are currently browsing the local vault as a guest.</p>
-                    <button class="liquid-brutal-master-btn" style="background: var(--neon-yellow-shadow); width: 100%; justify-content: center;" onclick="AppEngine.closeOpenModals(); AppEngine.launchTargetModalOverlay('authModal')">
-                        Log In or Sign Up
-                    </button>
-                `;
-            }
-        }
-        if (window.lucide) lucide.createIcons();
-    },
-
-    // --- 5. DATA MUTATION (Remains the same as before) ---
-    handlePromptSubmit(e) {
-// ... The rest of your code (handlePromptSubmit, handleCategorySubmit, etc.) remains exactly the same!
-        // Bind DOM Listeners
-        this.bindEvents();
-
-        // Initialize Firebase if available
-        this.initFirebase();
-
-        // Initial Paint
-        this.evaluateAuthState();
-        this.switchViewport('home'); 
-    },
-
-    saveData() {
-        localStorage.setItem("forest_prompts_v4", JSON.stringify(this.prompts));
-        localStorage.setItem("forest_categories_v4", JSON.stringify(this.categories));
-
-        // If Firestore is available and user is authenticated, persist to cloud
-        try {
-            if (this.db && this.authenticatedUser && this.authenticatedUser.uid) {
-                this.db.collection('users').doc(this.authenticatedUser.uid).set({
-                    prompts: this.prompts,
-                    categories: this.categories,
-                    updatedAt: Date.now()
-                }, { merge: true }).catch(() => {});
-            }
-        } catch (err) {
-            // non-fatal
-        }
-    },
-
-
-
-    // --- 3. AUTHENTICATION LOGIC ---
-    switchAuthTab(mode) {
-        this.authMode = mode;
-        const nameGroup = document.getElementById("nameInputGroup");
-        const submitBtn = document.getElementById("authSubmitBtn");
-        
-        document.getElementById("tabLogin").classList.remove("active");
-        document.getElementById("tabSignup").classList.remove("active");
-
-        if (mode === 'signup') {
-            document.getElementById("tabSignup").classList.add("active");
-            nameGroup.style.display = "flex";
-            document.getElementById("authName").required = true;
-            submitBtn.innerText = "Create Vault Account";
-            submitBtn.style.background = "var(--mint-green-accent)";
-        } else {
-            document.getElementById("tabLogin").classList.add("active");
-            nameGroup.style.display = "none";
-            document.getElementById("authName").required = false;
-            submitBtn.innerText = "Access Vault";
-            submitBtn.style.background = "var(--neon-yellow-shadow)";
-        }
-    },
 
     // Initialize Firebase (compat) when a valid config is present and the SDK is loaded
     initFirebase() {
         try {
-            if (!FirebaseEnvironment || !FirebaseEnvironment.apiKey || FirebaseEnvironment.apiKey.includes('YOUR')) return;
+            const hasConfig = FirebaseEnvironment && FirebaseEnvironment.apiKey && !FirebaseEnvironment.apiKey.includes('YOUR');
+            if (!hasConfig) {
+                console.warn('Firebase configuration missing or invalid.');
+                return;
+            }
+
             if (window.firebase && !this.db) {
                 try {
                     firebase.initializeApp(FirebaseEnvironment);
                 } catch (e) {
                     // already initialized
                 }
-                window.auth = firebase.auth();
-                window.db = firebase.firestore();
-                this.auth = window.auth;
-                this.db = window.db;
 
-                // Observe auth state changes to sync UI
-                this.auth.onAuthStateChanged((user) => {
+                this.auth = firebase.auth();
+                this.db = firebase.firestore();
+                window.auth = this.auth;
+                window.db = this.db;
+
+                if (this.auth && firebase.auth.Auth && firebase.auth.Auth.Persistence) {
+                    this.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {
+                        // persistence not supported in this environment
+                    });
+                }
+
+                // Observe auth state changes to sync UI and load cloud data when signed in
+                this.auth.onAuthStateChanged(async (user) => {
                     if (user) {
-                        this.authenticatedUser = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
+                        this.authenticatedUser = {
+                            uid: user.uid,
+                            name: user.displayName || 'Vault User',
+                            email: user.email,
+                            photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}&background=7c4dff&color=fff`
+                        };
                         localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
+                        await this.fetchCloudData();
                     } else {
-                        // preserve guest state
+                        this.authenticatedUser = null;
                     }
                     this.evaluateAuthState();
                 });
@@ -386,15 +257,19 @@ const AppEngine = {
         const submitBtn = document.getElementById("authSubmitBtn");
         if (submitBtn) submitBtn.disabled = true;
 
-        // If Firebase auth is available, use it; otherwise fall back to local simulated auth
-        if (window && window.auth) {
+        const authInstance = this.auth || window.auth;
+        if (authInstance && window.firebase) {
             try {
+                if (authInstance.setPersistence && firebase.auth && firebase.auth.Auth && firebase.auth.Auth.Persistence) {
+                    await authInstance.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                }
+
                 let userCredential;
                 if (this.authMode === 'signup') {
-                    userCredential = await auth.createUserWithEmailAndPassword(emailInput, passInput);
+                    userCredential = await authInstance.createUserWithEmailAndPassword(emailInput, passInput);
                     await userCredential.user.updateProfile({ displayName: nameInput });
                 } else {
-                    userCredential = await auth.signInWithEmailAndPassword(emailInput, passInput);
+                    userCredential = await authInstance.signInWithEmailAndPassword(emailInput, passInput);
                 }
 
                 const fallbackAvatar = "https://ui-avatars.com/api/?name=" + encodeURIComponent(userCredential.user.displayName || emailInput) + "&background=7c4dff&color=fff";
@@ -406,6 +281,7 @@ const AppEngine = {
                 };
 
                 localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
+                await this.fetchCloudData();
                 this.closeOpenModals();
                 this.evaluateAuthState();
                 this.dispatchToastAlert(`Vault Synced. Welcome, ${this.authenticatedUser.name}!`, "success");
@@ -435,17 +311,22 @@ const AppEngine = {
     // 🚀 REAL FIREBASE GOOGLE AUTH
     async executeGoogleSignIn() {
         this.dispatchToastAlert("Opening Google Secure Gateway...", "info");
-        if (window && window.auth && window.firebase) {
+        const authInstance = this.auth || window.auth;
+        if (authInstance && window.firebase) {
             try {
+                if (authInstance.setPersistence && firebase.auth && firebase.auth.Auth && firebase.auth.Auth.Persistence) {
+                    await authInstance.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                }
                 const provider = new firebase.auth.GoogleAuthProvider();
-                const userCredential = await auth.signInWithPopup(provider);
+                const userCredential = await authInstance.signInWithPopup(provider);
                 this.authenticatedUser = {
                     uid: userCredential.user.uid,
-                    name: userCredential.user.displayName,
+                    name: userCredential.user.displayName || 'Google User',
                     email: userCredential.user.email,
-                    photoURL: userCredential.user.photoURL
+                    photoURL: userCredential.user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userCredential.user.displayName || userCredential.user.email)}&background=7c4dff&color=fff`
                 };
                 localStorage.setItem("forest_auth_token_v4", JSON.stringify(this.authenticatedUser));
+                await this.fetchCloudData();
                 this.closeOpenModals();
                 this.evaluateAuthState();
                 this.dispatchToastAlert(`Google Identity Linked. Welcome!`, "success");
@@ -472,7 +353,8 @@ const AppEngine = {
     // 🚀 REAL FIREBASE SIGN OUT
     async executeSignOut() {
         try {
-            if (window && window.auth) await auth.signOut();
+            const authInstance = this.auth || window.auth;
+            if (authInstance) await authInstance.signOut();
             this.authenticatedUser = null;
             localStorage.removeItem("forest_auth_token_v4");
             this.closeOpenModals();
@@ -535,7 +417,7 @@ const AppEngine = {
     },
 
     // --- 4. DATA MUTATION ---
-    handlePromptSubmit(e) {
+    async handlePromptSubmit(e) {
         e.preventDefault();
         const id = document.getElementById("formPromptId").value;
         const title = document.getElementById("formPromptTitle").value;
@@ -566,40 +448,71 @@ const AppEngine = {
             this.dispatchToastAlert("Blueprint Saved.", "success");
         }
 
-        this.saveData();
+        await this.saveData();
         this.closeOpenModals();
         this.syncUI();
     },
 
-    handleCategorySubmit(e) {
+    async handleCategorySubmit(e) {
         e.preventDefault();
+        const oldName = document.getElementById("formOldCatName").value.trim();
         const name = document.getElementById("formNewCatName").value.trim();
-        const color = document.getElementById("formNewCatColor").value;
+        const colorType = document.querySelector('input[name="categoryColorType"]:checked')?.value || 'solid';
+        const solidColor = document.getElementById("formNewCatColor").value;
+        const gradientFrom = document.getElementById("formGradientFrom").value;
+        const gradientTo = document.getElementById("formGradientTo").value;
+        const gradientDirection = document.getElementById("formGradientDirection").value;
 
-        if (this.categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+        const color = colorType === 'gradient'
+            ? `linear-gradient(${gradientDirection}, ${gradientFrom}, ${gradientTo})`
+            : solidColor;
+
+        if (!name) {
+            this.dispatchToastAlert("Please provide a valid category name.", "warning");
+            return;
+        }
+
+        const duplicate = this.categories.some(c => c.name.toLowerCase() === name.toLowerCase() && c.name !== oldName);
+        if (duplicate) {
             this.dispatchToastAlert("Category exists.", "warning");
             return;
         }
 
-        this.categories.push({ name, color });
-        this.saveData();
+        if (oldName) {
+            const categoryIndex = this.categories.findIndex(c => c.name === oldName);
+            if (categoryIndex !== -1) {
+                this.categories[categoryIndex] = { name, color };
+                this.prompts = this.prompts.map(prompt => {
+                    if (prompt.category === oldName) {
+                        return { ...prompt, category: name, subCategory: prompt.subCategory === oldName ? name : prompt.subCategory };
+                    }
+                    return prompt;
+                });
+                this.dispatchToastAlert(`Branch '${oldName}' updated to '${name}'.`, "success");
+            }
+        } else {
+            this.categories.push({ name, color });
+            this.dispatchToastAlert(`Branch '${name}' built.`, "success");
+        }
+
+        await this.saveData();
         this.closeOpenModals();
         this.syncUI();
-        this.dispatchToastAlert(`Branch '${name}' built.`, "success");
+        this.renderCategoryManagerList();
     },
 
-    executeCardPurge(id) {
+    async executeCardPurge(id) {
         this.prompts = this.prompts.filter(p => p.id !== parseInt(id));
-        this.saveData();
+        await this.saveData();
         this.syncUI();
         this.dispatchToastAlert("Record purged.", "info");
     },
 
-    toggleCardFavoritedState(id) {
+    async toggleCardFavoritedState(id) {
         const index = this.prompts.findIndex(p => p.id === parseInt(id));
         if (index !== -1) {
             this.prompts[index].liked = !this.prompts[index].liked;
-            this.saveData();
+            await this.saveData();
             this.syncUI();
         }
     },
@@ -625,10 +538,13 @@ const AppEngine = {
         document.getElementById("promptDataAssetForm").addEventListener("submit", (e) => this.handlePromptSubmit(e));
         document.getElementById("categoryDataAssetForm").addEventListener("submit", (e) => this.handleCategorySubmit(e));
 
-        document.getElementById("openCategoryManagerBtn").addEventListener("click", () => {
-            document.getElementById("categoryDataAssetForm").reset();
-            this.launchTargetModalOverlay("categoryFormModal");
-        });
+        const categoryManagerBtn = document.getElementById("openCategoryManagerBtn");
+        if (categoryManagerBtn) {
+            categoryManagerBtn.addEventListener("click", () => {
+                this.renderCategoryManagerList();
+                this.launchTargetModalOverlay("categoryManagerModal");
+            });
+        }
 
         // Unified Bottom Dock Routing
         const routes = [
@@ -689,32 +605,31 @@ const AppEngine = {
         if (!track) return;
         track.innerHTML = "";
 
+        const fragment = document.createDocumentFragment();
         this.categories.forEach(category => {
-            let count = category.name === 'all' 
-                ? this.prompts.length 
+            const count = category.name === 'all'
+                ? this.prompts.length
                 : this.prompts.filter(p => p.category === category.name).length;
 
             const isActive = this.filterState.activeCategory === category.name;
             const pill = document.createElement("div");
-            
             pill.className = `category-selection-gel-pill ${isActive ? 'active' : ''}`;
-            pill.style.backgroundColor = category.name === 'all' ? '#ffffff' : category.color;
+            pill.style.background = category.name === 'all' ? '#ffffff' : category.color;
             pill.style.color = 'var(--text-charcoal-primary)';
-            
             pill.innerHTML = `
                 <span>${category.name === 'all' ? 'All' : category.name}</span>
                 <span class="pill-quantity-string">${count} Elements</span>
             `;
-            
             pill.addEventListener("click", () => {
                 document.querySelectorAll(".category-selection-gel-pill").forEach(c => c.classList.remove("active"));
                 pill.classList.add("active");
                 this.filterState.activeCategory = category.name;
                 this.renderPrompts();
             });
-
-            track.appendChild(pill);
+            fragment.appendChild(pill);
         });
+
+        track.appendChild(fragment);
     },
 
     renderPrompts() {
@@ -918,6 +833,117 @@ const AppEngine = {
             opt.innerText = cat.name;
             select.appendChild(opt);
         });
+    },
+
+    updateCategoryColorPreview() {
+        const mode = document.querySelector('input[name="categoryColorType"]:checked')?.value || 'solid';
+        const preview = document.getElementById("categoryColorPreview");
+        if (!preview) return;
+
+        if (mode === 'gradient') {
+            const from = document.getElementById("formGradientFrom").value;
+            const to = document.getElementById("formGradientTo").value;
+            const direction = document.getElementById("formGradientDirection").value;
+            preview.style.background = `linear-gradient(${direction}, ${from}, ${to})`;
+            document.getElementById("gradientOptions").style.display = "block";
+        } else {
+            const color = document.getElementById("formNewCatColor").value;
+            preview.style.background = color;
+            document.getElementById("gradientOptions").style.display = "none";
+        }
+    },
+
+    openCategoryForm(editPayload = null) {
+        const form = document.getElementById("categoryDataAssetForm");
+        if (!form) return;
+
+        form.reset();
+        document.getElementById("formOldCatName").value = "";
+        document.getElementById("categoryModalTitle").innerText = "Add Category";
+        document.getElementById("categorySubmitBtn").innerText = "Save Category";
+        document.querySelector('input[name="categoryColorType"][value="solid"]').checked = true;
+        document.getElementById("gradientOptions").style.display = "none";
+
+        if (editPayload) {
+            const gradientMode = typeof editPayload.color === 'string' && editPayload.color.startsWith('linear-gradient');
+            document.getElementById("formOldCatName").value = editPayload.name;
+            document.getElementById("formNewCatName").value = editPayload.name;
+
+            if (gradientMode) {
+                document.querySelector('input[name="categoryColorType"][value="gradient"]').checked = true;
+                document.getElementById("gradientOptions").style.display = "block";
+                document.getElementById("categoryModalTitle").innerText = "Edit Category";
+                document.getElementById("categorySubmitBtn").innerText = "Update Category";
+            } else {
+                document.getElementById("formNewCatColor").value = editPayload.color || "#dfff4f";
+                document.getElementById("categoryModalTitle").innerText = "Edit Category";
+                document.getElementById("categorySubmitBtn").innerText = "Update Category";
+            }
+        }
+
+        this.updateCategoryColorPreview();
+        this.closeOpenModals();
+        this.launchTargetModalOverlay("categoryFormModal");
+    },
+
+    renderCategoryManagerList() {
+        const slot = document.getElementById("categoryManagerListSlot");
+        if (!slot) return;
+        slot.innerHTML = "";
+
+        const categories = this.categories.filter(c => c.name !== 'all');
+        if (categories.length === 0) {
+            slot.innerHTML = `<div style="padding: 24px; text-align:center; color:var(--text-charcoal-secondary);">No custom categories yet. Add one to organize your prompts.</div>`;
+            return;
+        }
+
+        categories.forEach(category => {
+            const item = document.createElement("div");
+            item.className = "category-manager-item";
+
+            const left = document.createElement("div");
+            left.className = "category-manager-item-left";
+            left.innerHTML = `
+                <span class="category-color-dot" style="background: ${category.color};"></span>
+                <span>${category.name}</span>
+            `;
+
+            const actions = document.createElement("div");
+            actions.className = "category-manager-actions";
+
+            const editBtn = document.createElement("button");
+            editBtn.type = "button";
+            editBtn.className = "liquid-brutal-master-btn";
+            editBtn.style.cssText = "padding: 8px 12px; font-size: 12px; background: var(--soft-coral-accent); color:#fff;";
+            editBtn.innerText = "Edit";
+            editBtn.addEventListener("click", () => this.openCategoryForm(category));
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.className = "liquid-brutal-master-btn";
+            deleteBtn.style.cssText = "padding: 8px 12px; font-size: 12px; background: #666; color:#fff;";
+            deleteBtn.innerText = "Delete";
+            deleteBtn.addEventListener("click", () => this.deleteCategory(category.name));
+
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+            item.appendChild(left);
+            item.appendChild(actions);
+            slot.appendChild(item);
+        });
+    },
+
+    deleteCategory(name) {
+        this.categories = this.categories.filter(c => c.name !== name && c.name !== 'all');
+        this.prompts = this.prompts.map(prompt => {
+            if (prompt.category === name) return { ...prompt, category: 'all', subCategory: 'all' };
+            return prompt;
+        });
+
+        this.saveData();
+        this.syncUI();
+        this.renderCategoryManagerList();
+        this.dispatchToastAlert(`Branch '${name}' deleted.`, "info");
     },
 
     // --- 7. MODALS & UTILITIES ---
