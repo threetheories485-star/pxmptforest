@@ -2,20 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pxmpt Forest — Premium Liquid Vault</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Pxmpt Forest is a compact prompt vault with Firebase auth and cloud sync for desktop and mobile.">
+    <title>Pxmpt Forest — Lifelike Liquid Vault</title>
     
     <link rel="stylesheet" href="styless.css">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Outfit:wght@500;700;800;900&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Firebase (compat v8) - required only if you enable Firebase config in app.js -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 </head>
 <body>
 
@@ -24,47 +21,42 @@
     <div class="fluid-ambient-glow ambient-blob-lavender"></div>
 
     <div class="forest-app-shell">
-
         <main class="content-stream-viewport">
             
             <header class="vault-main-header" id="mainAppHeader">
                 <div class="header-branding-text">
                     <h1 class="app-logo-text">Pxmpt Forest</h1>
-                    <p class="app-tagline-text">Save, organize and reuse your best prompts.</p>
+                    <p class="app-tagline-text">Curate, organize, and execute your blueprints.</p>
                 </div>
                 <div class="header-profile-container" id="headerAuthSlot"></div>
             </header>
 
             <div id="homeViewPort" class="viewport-layer active-viewport">
                 <section class="search-panel-shelf">
-                    <div class="liquid-gel-search-wrapper">
+                    <div class="liquid-gel-search-wrapper haptic-target">
                         <i data-lucide="search" class="lens-svg"></i>
-                        <input type="text" id="promptSearchField" placeholder="Search prompts...">
-                        <button class="search-tuning-btn" title="Filter Configuration"><i data-lucide="sliders-horizontal"></i></button>
+                        <input type="text" id="promptSearchField" placeholder="Search your vault...">
+                        <button class="search-tuning-btn haptic-target" title="Filter Configuration"><i data-lucide="sliders-horizontal"></i></button>
                     </div>
                 </section>
 
                 <section class="categories-panel-shelf">
                     <div class="panel-title-row">
-                        <h3>Categories</h3>
-                        <button class="manage-action-btn" id="openCategoryManagerBtn">Manage</button>
+                        <h3>Vault Categories</h3>
+                        <button class="manage-action-btn haptic-target" id="openCategoryManagerBtn">Manage</button>
                     </div>
-                    <div class="categories-carousel-track" id="categoryPillTrack">
-                        </div>
+                    <div class="categories-carousel-track" id="categoryPillTrack"></div>
                 </section>
 
-                <section class="liquid-cards-responsive-grid" id="promptsGridContainer">
-                    </section>
+                <section class="liquid-cards-responsive-grid" id="promptsGridContainer"></section>
             </div>
 
             <div id="foldersViewPort" class="viewport-layer hidden-viewport">
                 <section class="forest-map-header">
-                    <h3>System Architecture Tree</h3>
-                    <p class="app-tagline-text">Explore your operational blueprints via root category branches.</p>
+                    <h3>System Architecture</h3>
+                    <p class="app-tagline-text">Visualize your blueprints through connected root branches.</p>
                 </section>
-                
-                <section class="forest-tree-container" id="forestTreeMapSlot">
-                    </section>
+                <section class="forest-tree-container" id="forestTreeMapSlot"></section>
             </div>
             
         </main>
@@ -73,32 +65,32 @@
     <nav class="liquid-glass-floating-dock" id="bottomNavDock">
         <div class="liquid-blur-shield"></div>
         <div class="dock-action-mesh">
-            <button class="dock-link-item active" id="dockHome" title="Home Feed"><i data-lucide="home"></i></button>
-            <button class="dock-link-item" id="dockFavs" title="Favorites"><i data-lucide="heart"></i></button>
-            <button class="dock-link-item dynamic-plus-glow-btn" id="dockAddPrompt" title="Add Prompt"><i data-lucide="plus"></i></button>
-            <button class="dock-link-item" id="dockFolders" title="Forest Map"><i data-lucide="git-merge"></i></button>
-            <button class="dock-link-item" id="dockSettings" title="App Settings"><i data-lucide="settings"></i></button>
+            <button class="dock-link-item haptic-target active" id="dockHome" title="Home Feed"><i data-lucide="home"></i></button>
+            <button class="dock-link-item haptic-target" id="dockFavs" title="Favorites"><i data-lucide="heart"></i></button>
+            <button class="dock-link-item dynamic-plus-glow-btn haptic-target" id="dockAddPrompt" title="Add Prompt"><i data-lucide="plus"></i></button>
+            <button class="dock-link-item haptic-target" id="dockFolders" title="Forest Map"><i data-lucide="git-merge"></i></button>
+            <button class="dock-link-item haptic-target" id="dockSettings" title="App Settings"><i data-lucide="settings"></i></button>
         </div>
     </nav>
 
     <div class="system-modal-backdrop-overlay" id="authModal">
-        <div class="liquid-gel-modal-box">
-            <div class="modal-box-header" style="margin-bottom: 16px;">
+        <div class="liquid-gel-modal-box auth-specific-box">
+            <div class="modal-box-header" style="margin-bottom: 12px;">
                 <h2>Account Access</h2>
-                <button class="modal-close-icon-btn" onclick="AppEngine.closeOpenModals()"><i data-lucide="x"></i></button>
+                <button class="modal-close-icon-btn haptic-target" onclick="AppEngine.closeOpenModals()"><i data-lucide="x"></i></button>
             </div>
             
-            <p class="app-tagline-text" style="margin-bottom: 24px;">Sign in or create an account to sync your vault.</p>
+            <p class="app-tagline-text" style="margin-bottom: 24px;">Sign in or create an account to activate cloud sync.</p>
 
             <div class="auth-toggle-pill">
-                <button class="auth-tab-btn active" id="tabLogin" onclick="AppEngine.switchAuthTab('login')">Log In</button>
-                <button class="auth-tab-btn" id="tabSignup" onclick="AppEngine.switchAuthTab('signup')">Sign Up</button>
+                <button class="auth-tab-btn haptic-target active" id="tabLogin" onclick="AppEngine.switchAuthTab('login')">Log In</button>
+                <button class="auth-tab-btn haptic-target" id="tabSignup" onclick="AppEngine.switchAuthTab('signup')">Sign Up</button>
             </div>
 
             <form id="authGatewayForm">
                 <div class="modal-form-group" id="nameInputGroup" style="display: none;">
                     <label>Full Name</label>
-                    <input type="text" id="authName" placeholder="e.g., Techstaars">
+                    <input type="text" id="authName" placeholder="e.g., Jane Doe">
                 </div>
                 <div class="modal-form-group">
                     <label>Email Address</label>
@@ -108,12 +100,12 @@
                     <label>Password</label>
                     <input type="password" id="authPassword" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="liquid-brutal-master-btn submit-action-btn" id="authSubmitBtn" style="background: var(--neon-yellow-shadow);">Access Vault</button>
+                <button type="submit" class="liquid-brutal-master-btn submit-action-btn haptic-target" id="authSubmitBtn" style="background: var(--neon-yellow-shadow);">Access Vault</button>
             </form>
 
             <div class="auth-divider"><span>OR</span></div>
 
-            <button class="liquid-brutal-master-btn google-auth-btn" onclick="AppEngine.executeGoogleSignIn()">
+            <button class="liquid-brutal-master-btn google-auth-btn haptic-target" onclick="AppEngine.executeGoogleSignIn()">
                 <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 Continue with Google
             </button>
@@ -123,34 +115,36 @@
     <div class="system-modal-backdrop-overlay" id="promptFormModal">
         <div class="liquid-gel-modal-box">
             <div class="modal-box-header">
-                <h2 id="promptModalTitle">Create Prompt Blueprint</h2>
-                <button class="modal-close-icon-btn" onclick="AppEngine.closeOpenModals()"><i data-lucide="x"></i></button>
+                <h2 id="promptModalTitle">Blueprint Core</h2>
+                <button class="modal-close-icon-btn haptic-target" onclick="AppEngine.closeOpenModals()"><i data-lucide="x"></i></button>
             </div>
             <form id="promptDataAssetForm">
                 <input type="hidden" id="formPromptId">
                 <div class="modal-form-group">
-                    <label>Prompt Card Title</label>
-                    <input type="text" id="formPromptTitle" placeholder="e.g., C++ Algorithm Optimizer" required>
+                    <label>Blueprint Title</label>
+                    <input type="text" id="formPromptTitle" placeholder="e.g., Python Data Analyzer" required>
                 </div>
-                <div class="modal-form-row-split">
-                    <div class="modal-form-group">
-                        <label>Custom Icon (Emoji)</label>
-                        <input type="text" id="formPromptIcon" placeholder="e.g., 🤖, 💻" value="📝" required>
+                
+                <div class="responsive-form-row uneven-row">
+                    <div class="modal-form-group icon-group">
+                        <label>Icon</label>
+                        <input type="text" id="formPromptIcon" placeholder="🤖" value="📝" required maxlength="2" style="text-align: center;">
                     </div>
-                    <div class="modal-form-group">
+                    <div class="modal-form-group category-group">
                         <label>Category Node</label>
                         <select id="formPromptCategorySelect"></select>
                     </div>
                 </div>
+
                 <div class="modal-form-group">
-                    <label>System Prompt Core Text</label>
-                    <textarea id="formPromptText" rows="5" placeholder="Define the core logic structure..." required></textarea>
+                    <label>System Prompt Text</label>
+                    <textarea id="formPromptText" rows="4" placeholder="Define the operational parameters..." required></textarea>
                 </div>
                 <div class="modal-form-group">
                     <label>Sub-Category Branch</label>
-                    <input type="text" id="formPromptSubCategory" placeholder="e.g., Blogger Tools">
+                    <input type="text" id="formPromptSubCategory" placeholder="e.g., Machine Learning">
                 </div>
-                <button type="submit" class="liquid-brutal-master-btn submit-action-btn">Commit to System Core</button>
+                <button type="submit" class="liquid-brutal-master-btn submit-action-btn haptic-target">Inject into Vault</button>
             </form>
         </div>
     </div>
@@ -159,13 +153,11 @@
         <div class="liquid-gel-modal-box">
             <div class="modal-box-header">
                 <h2>Manage Categories</h2>
-                <button class="modal-close-icon-btn" onclick="AppEngine.closeOpenModals()"><i data-lucide="x"></i></button>
+                <button class="modal-close-icon-btn haptic-target" onclick="AppEngine.closeOpenModals()"><i data-lucide="x"></i></button>
             </div>
-
             <div class="category-manager-list" id="categoryManagerListSlot"></div>
-
-            <button class="liquid-brutal-master-btn" style="width: 100%; justify-content: center; background: var(--neon-yellow-shadow);" onclick="AppEngine.openCategoryForm()">
-                <i data-lucide="plus"></i> Add New Branch
+            <button class="liquid-brutal-master-btn haptic-target" style="width: 100%; justify-content: center; background: var(--neon-yellow-shadow);" onclick="AppEngine.openCategoryForm()">
+                <i data-lucide="plus"></i> Create New Branch
             </button>
         </div>
     </div>
@@ -174,7 +166,7 @@
         <div class="liquid-gel-modal-box">
             <div class="modal-box-header">
                 <h2 id="categoryModalTitle">Add Category</h2>
-                <button class="modal-close-icon-btn" onclick="AppEngine.launchTargetModalOverlay('categoryManagerModal'); document.getElementById('categoryFormModal').classList.remove('open');" title="Go Back">
+                <button class="modal-close-icon-btn haptic-target" onclick="AppEngine.launchTargetModalOverlay('categoryManagerModal'); document.getElementById('categoryFormModal').classList.remove('open');" title="Go Back">
                     <i data-lucide="arrow-left"></i>
                 </button>
             </div>
@@ -182,37 +174,39 @@
                 <input type="hidden" id="formOldCatName">
                 <div class="modal-form-group">
                     <label>Category Label Name</label>
-                    <input type="text" id="formNewCatName" placeholder="e.g., Data Science" required>
+                    <input type="text" id="formNewCatName" placeholder="e.g., UI Design" required>
                 </div>
+                
                 <div class="modal-form-group">
-                    <label>Color Mode</label>
-                    <div class="category-color-mode-group">
-                        <label><input type="radio" name="categoryColorType" value="solid" checked onchange="AppEngine.updateCategoryColorPreview()"> Solid</label>
-                        <label><input type="radio" name="categoryColorType" value="gradient" onchange="AppEngine.updateCategoryColorPreview()"> Gradient</label>
+                    <label>Theme Style</label>
+                    <div class="auth-toggle-pill" style="margin-bottom: 8px;">
+                        <button type="button" class="auth-tab-btn haptic-target active" id="tabSolidColor" onclick="AppEngine.toggleColorMode('solid')">Solid</button>
+                        <button type="button" class="auth-tab-btn haptic-target" id="tabGradientColor" onclick="AppEngine.toggleColorMode('gradient')">Gradient</button>
                     </div>
                 </div>
+
+                <div class="modal-form-group" id="solidColorSelector">
+                    <label>Base Color</label>
+                    <input type="color" id="formNewCatColorSolid" value="#dfff4f" class="custom-color-picker haptic-target">
+                </div>
+
+                <div class="responsive-form-row" id="gradientColorSelector" style="display: none;">
+                    <div class="modal-form-group">
+                        <label>Color 1</label>
+                        <input type="color" id="formNewCatColorGrad1" value="#7c4dff" class="custom-color-picker haptic-target">
+                    </div>
+                    <div class="modal-form-group">
+                        <label>Color 2</label>
+                        <input type="color" id="formNewCatColorGrad2" value="#3ebdff" class="custom-color-picker haptic-target">
+                    </div>
+                </div>
+
                 <div class="modal-form-group">
-                    <label>Solid Highlight Color</label>
-                    <input type="color" id="formNewCatColor" value="#dfff4f" onchange="AppEngine.updateCategoryColorPreview()" style="width: 100%; height: 50px; padding: 4px; cursor: pointer; border-radius: 14px;">
+                    <label>Live Preview</label>
+                    <div id="categoryLivePreview" class="category-preview-box">Preview Style</div>
                 </div>
-                <div class="modal-form-group category-gradient-controls" id="gradientOptions" style="display:none;">
-                    <label>Gradient From</label>
-                    <input type="color" id="formGradientFrom" value="#dfff4f" onchange="AppEngine.updateCategoryColorPreview()" style="width: 100%; height: 50px; padding: 4px; cursor: pointer; border-radius: 14px; margin-bottom: 12px;">
-                    <label>Gradient To</label>
-                    <input type="color" id="formGradientTo" value="#7c4dff" onchange="AppEngine.updateCategoryColorPreview()" style="width: 100%; height: 50px; padding: 4px; cursor: pointer; border-radius: 14px; margin-bottom: 12px;">
-                    <label>Gradient Direction</label>
-                    <select id="formGradientDirection" onchange="AppEngine.updateCategoryColorPreview()" style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.1);">
-                        <option value="90deg">Left → Right</option>
-                        <option value="180deg">Top → Bottom</option>
-                        <option value="135deg">Diagonal</option>
-                        <option value="45deg">Reverse Diagonal</option>
-                    </select>
-                </div>
-                <div class="modal-form-group">
-                    <label>Live Color Preview</label>
-                    <div id="categoryColorPreview" class="color-preview-box"></div>
-                </div>
-                <button type="submit" class="liquid-brutal-master-btn submit-action-btn" id="categorySubmitBtn" style="background: var(--mint-green-accent);">Save Category</button>
+
+                <button type="submit" class="liquid-brutal-master-btn submit-action-btn haptic-target" id="categorySubmitBtn" style="background: var(--mint-green-accent);">Save Category</button>
             </form>
         </div>
     </div>
@@ -221,16 +215,14 @@
         <div class="liquid-gel-modal-box">
             <div class="modal-box-header">
                 <h2>System Settings</h2>
-                <button class="modal-close-icon-btn" onclick="AppEngine.closeOpenModals()"><i data-lucide="x"></i></button>
+                <button class="modal-close-icon-btn haptic-target" onclick="AppEngine.closeOpenModals()"><i data-lucide="x"></i></button>
             </div>
             <div class="modal-scrollable-body-viewport">
-                
                 <div class="settings-interactive-card" id="settingsAuthBtnSlot"></div>
-
                 <div class="settings-interactive-card" style="margin-top: 16px;">
-                    <h4>Wipe System Cache</h4>
-                    <p class="app-tagline-text" style="margin-bottom:12px;">Completely clear browser memory state registers to initial values.</p>
-                    <button class="liquid-brutal-master-btn" style="background:#ff6b6b; color:#fff; font-size:12px; padding:8px 14px;" onclick="AppEngine.purgeSystemDatabaseCache()">Wipe Local Cache</button>
+                    <h4>Wipe Local Cache</h4>
+                    <p class="app-tagline-text" style="margin-bottom:12px;">Clear browser memory registers. Does not delete cloud data.</p>
+                    <button class="liquid-brutal-master-btn haptic-target" style="background:#ff6b6b; color:#fff; font-size:12px; padding:8px 14px;" onclick="AppEngine.purgeSystemDatabaseCache()">Wipe Cache</button>
                 </div>
             </div>
         </div>
@@ -238,6 +230,9 @@
 
     <div class="toast-notification-center-hub" id="toastNotificationHub"></div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
