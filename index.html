@@ -155,28 +155,64 @@
         </div>
     </div>
 
+    <div class="system-modal-backdrop-overlay" id="categoryManagerModal">
+        <div class="liquid-gel-modal-box">
+            <div class="modal-box-header">
+                <h2>Manage Categories</h2>
+                <button class="modal-close-icon-btn" onclick="AppEngine.closeOpenModals()"><i data-lucide="x"></i></button>
+            </div>
+
+            <div class="category-manager-list" id="categoryManagerListSlot"></div>
+
+            <button class="liquid-brutal-master-btn" style="width: 100%; justify-content: center; background: var(--neon-yellow-shadow);" onclick="AppEngine.openCategoryForm()">
+                <i data-lucide="plus"></i> Add New Branch
+            </button>
+        </div>
+    </div>
+
     <div class="system-modal-backdrop-overlay" id="categoryFormModal">
         <div class="liquid-gel-modal-box">
             <div class="modal-box-header">
-                <h2>Add Custom Category</h2>
-                <button class="modal-close-icon-btn" onclick="AppEngine.closeOpenModals()"><i data-lucide="x"></i></button>
+                <h2 id="categoryModalTitle">Add Category</h2>
+                <button class="modal-close-icon-btn" onclick="AppEngine.launchTargetModalOverlay('categoryManagerModal'); document.getElementById('categoryFormModal').classList.remove('open');" title="Go Back">
+                    <i data-lucide="arrow-left"></i>
+                </button>
             </div>
             <form id="categoryDataAssetForm">
+                <input type="hidden" id="formOldCatName">
                 <div class="modal-form-group">
                     <label>Category Label Name</label>
                     <input type="text" id="formNewCatName" placeholder="e.g., Data Science" required>
                 </div>
                 <div class="modal-form-group">
-                    <label>Brutalist Core Highlight Color</label>
-                    <select id="formNewCatColor">
-                        <option value="#dfff4f">Neon Yellow Accent</option>
-                        <option value="#7c4dff">Deep Plasma Purple</option>
-                        <option value="#32e27b">High-Contrast Mint Green</option>
-                        <option value="#3ebdff">Vibrant Fluid Blue</option>
-                        <option value="#ff6b6b">Radical Coral Rose</option>
+                    <label>Color Mode</label>
+                    <div class="category-color-mode-group">
+                        <label><input type="radio" name="categoryColorType" value="solid" checked onchange="AppEngine.updateCategoryColorPreview()"> Solid</label>
+                        <label><input type="radio" name="categoryColorType" value="gradient" onchange="AppEngine.updateCategoryColorPreview()"> Gradient</label>
+                    </div>
+                </div>
+                <div class="modal-form-group">
+                    <label>Solid Highlight Color</label>
+                    <input type="color" id="formNewCatColor" value="#dfff4f" onchange="AppEngine.updateCategoryColorPreview()" style="width: 100%; height: 50px; padding: 4px; cursor: pointer; border-radius: 14px;">
+                </div>
+                <div class="modal-form-group category-gradient-controls" id="gradientOptions" style="display:none;">
+                    <label>Gradient From</label>
+                    <input type="color" id="formGradientFrom" value="#dfff4f" onchange="AppEngine.updateCategoryColorPreview()" style="width: 100%; height: 50px; padding: 4px; cursor: pointer; border-radius: 14px; margin-bottom: 12px;">
+                    <label>Gradient To</label>
+                    <input type="color" id="formGradientTo" value="#7c4dff" onchange="AppEngine.updateCategoryColorPreview()" style="width: 100%; height: 50px; padding: 4px; cursor: pointer; border-radius: 14px; margin-bottom: 12px;">
+                    <label>Gradient Direction</label>
+                    <select id="formGradientDirection" onchange="AppEngine.updateCategoryColorPreview()" style="width: 100%; padding: 12px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.1);">
+                        <option value="90deg">Left → Right</option>
+                        <option value="180deg">Top → Bottom</option>
+                        <option value="135deg">Diagonal</option>
+                        <option value="45deg">Reverse Diagonal</option>
                     </select>
                 </div>
-                <button type="submit" class="liquid-brutal-master-btn submit-action-btn" style="background: var(--neon-yellow-shadow);">Inject Category Branch</button>
+                <div class="modal-form-group">
+                    <label>Live Color Preview</label>
+                    <div id="categoryColorPreview" class="color-preview-box"></div>
+                </div>
+                <button type="submit" class="liquid-brutal-master-btn submit-action-btn" id="categorySubmitBtn" style="background: var(--mint-green-accent);">Save Category</button>
             </form>
         </div>
     </div>
