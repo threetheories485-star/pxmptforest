@@ -1,0 +1,10 @@
+{
+  "name": "Pxmpt Forest",
+  "short_name": "Pxmpt",
+  "description": "A compact prompt vault with Firebase auth, cloud sync, and offline access.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f0ecf4",
+  "theme_color": "#7c4dff"
+}
